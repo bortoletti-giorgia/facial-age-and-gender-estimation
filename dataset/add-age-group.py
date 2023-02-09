@@ -19,11 +19,11 @@ ranges = [range(0,3), range(3,13), range(13, 20), range(20, 30),
 
 # Add column 'age-group' to CSV file based on 'age' column
 df = pd.read_csv(csv_path)
-df['age-group'] = ""
+df['label'] = ""
 
 for i in range(len(ranges)):
     criteria = "age in @ranges["+str(i)+"]"
-    df.loc[df.eval(criteria), 'age-group'] = i
+    df.loc[df.eval(criteria), 'label'] = i
 
 # Save the updated CSV file
 df.to_csv(csv_path, index=False)
