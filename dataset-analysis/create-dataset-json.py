@@ -37,7 +37,7 @@ for root, subdirs, files in os.walk(dataset_path):
         continue
     current_subdir = os.path.split(root)[1]
     for filename in files:
-        file_path = os.path.join(current_subdir, filename)
+        file_path = current_subdir + "/" + filename
         #print('\t- file %s (full path: %s)' % (filename, file_path))
         data_dict['labels'].append([file_path, label_counter])
 
