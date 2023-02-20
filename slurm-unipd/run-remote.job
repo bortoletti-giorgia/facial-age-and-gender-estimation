@@ -10,9 +10,10 @@
 
 cd $bortoletti
 
-#srun singularity exec --nv ./ubuntu-anaconda.sif python stylegan2-ada-pytorch-main/dataset_tool.py --source=/home/bortoletti/dataset --dest=/home/bortoletti/tfrecords-dataset
+srun singularity exec --nv ./singularity-container.sif python stylegan2-ada-pytorch-main/dataset_tool.py --source=/home/bortoletti/dataset --dest=/home/bortoletti/tfrecords-dataset
 
-srun singularity exec --nv ./ubuntu-anaconda.sif activate stylegan-pytorch
-#srun singularity run --nv ./ubuntu-anaconda.sif conda info --envs
+srun singularity exec --nv ./singularity-container.sif activate stylegan-pytorch
 
-srun singularity exec --nv ./ubuntu-anaconda.sif python stylegan2-ada-pytorch-main/train.py --data=/home/bortoletti/tfrecords-dataset --outdir=/home/bortoletti/results --cond=1
+srun singularity exec --nv ./singularity-container.sif python stylegan2-ada-pytorch-main/train.py --data=/home/bortoletti/tfrecords-dataset --outdir=/home/bortoletti/results --cond=1
+
+#srun singularity exec --nv ./singularity-container.sif python stylegan2-ada-pytorch-main/generate.py --outdir=/home/bortoletti/results --trunc=1 --seeds=85,265,297,849 --network=/home/bortoletti/results/00007-tfrecords-dataset-cond-auto1/network.pkl

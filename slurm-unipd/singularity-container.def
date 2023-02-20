@@ -1,5 +1,8 @@
 Bootstrap: docker
-From: nvidia/cuda:11.0.3-devel-ubuntu18.04
+# If you are using GPU RTX3090 write:
+From: nvidia/cuda:11.1.1-devel-ubuntu18.04
+# Otherwise
+# From: nvidia/cuda:11.0.3-devel-ubuntu18.04
 
 %post
 
@@ -54,5 +57,5 @@ conda create -y -n stylegan-pytorch python==3.7
 activate stylegan-pytorch
 pip install click requests tqdm pyspng ninja imageio-ffmpeg==0.4.3
 pip install scipy
-# conda install -c anaconda cudatoolkit=11.0 
+#conda install -c nvidia cudnn=8.0 cudatoolkit=11.1 
 pip install torch==1.7.1+cu110 torchvision==0.8.2+cu110 torchaudio==0.7.2 -f https://download.pytorch.org/whl/torch_stable.html 
