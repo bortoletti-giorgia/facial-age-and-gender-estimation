@@ -66,9 +66,11 @@ Now we want to extract only the images with a face. Face is extracted using the 
 
 Faces images are saved and to use them in JoJoGAN they should be placed in the folder */JoJoGAN/style_images*.
 
-### Apply style to dataset: JoJoGAN
-
 ### Balance the age distribution in the dataset: SAM
+
+Before using JoJoGAN you need to have n images for each age-group. In our case 4 images for each range. This is because once you go to apply the style on an image you need the age-group to be consistent and not, for example, apply the style of a 20 year old boy on an 80 year old person. You can use [SAM](https://github.com/yuval-alaluf/SAM) to do this. To use SAM refer to my [fork](https://github.com/bortoletti-giorgia/SAM). Use SLURM-UNIPD with the job file [here](https://github.com/bortoletti-giorgia/facial-age-estimation/blob/sam/sam/main-sam.job). The target ages are defined as the middle ages of each age-group via the [getMiddles()](https://github.com/bortoletti-giorgia/facial-age-estimation/blob/dataset/dataset-analysis/age_groups.py) method so that in the subsequent style adaptation the style reference image are equidistant from the minimum and maximum of each range.
+
+### Apply style to dataset: JoJoGAN
 
 ## Train
 Training is done on gender and age labels. However, age is not considered in its exactness but taking into account an age-group defined in [age_groups.py](https://github.com/bortoletti-giorgia/facial-age-estimation/blob/dataset/dataset-analysis/age_groups.py). 
