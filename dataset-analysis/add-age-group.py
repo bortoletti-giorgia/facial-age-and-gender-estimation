@@ -1,5 +1,6 @@
 import argparse
 import pandas as pd 
+from age_groups import *
 
 # SET CSV folder and CSV filename
 parser = argparse.ArgumentParser()
@@ -12,10 +13,7 @@ csv_folder = args.folder
 csv_path = csv_folder + args.filename
 
 # Age groups
-ranges = [range(0,3), range(3,13), range(13, 20), range(20, 30),
-         range(30, 40), range(40, 50), range(50, 60), range(60, 70),
-         range(70, 80), range(80, 90), range(90, 100), range(100,117)]
-
+ranges = AgeGroups().getRanges()
 
 # Add column 'age-group' to CSV file based on 'age' column
 df = pd.read_csv(csv_path)
