@@ -1,0 +1,22 @@
+#!/bin/bash
+#SBATCH -J SAM
+#SBATCH -o /home/bortoletti/out/sam_%j_output.txt
+#SBATCH -e /home/bortoletti/out/sam_%j_errors.txt
+#SBATCH -t 1-23:30:00
+#SBATCH -n 1
+#SBATCH -p allgroups
+#SBATCH --mem 32G
+#SBATCH --gres=gpu:rtx
+
+cd $bortoletti
+cd SAM
+
+srun singularity exec --nv /home/bortoletti/sam-container.sif activate sam_env
+
+srun singularity exec --nv /home/bortoletti/sam-container.sif python scripts/inference.py \
+--exp_dir="/home/bortoletti/SAM/results" \
+--checkpoint_path="/home/bortoletti/SAM/pretrained_models/sam_ffhq_aging.pt" \
+--data_path="/home/bortoletti/SAM/notebooks/images" \
+--test_batch_size=4 \
+--test_workers=4 \
+--couple_outputs --target_age=1,8,16,24,34,44,54,64,74,84,94,108
