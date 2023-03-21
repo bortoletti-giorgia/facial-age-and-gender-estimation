@@ -19,4 +19,4 @@ srun singularity exec --nv /home/bortoletti/sam-container.sif python scripts/inf
 --data_path="/home/bortoletti/SAM/notebooks/images" \
 --test_batch_size=4 \
 --test_workers=4 \
---couple_outputs --target_age=1,8,16,24,34,44,54,64,74,84,94,108
+--couple_outputs --target_age=1,8,16,24,34,44,54,64,74,84,94,108 --resize_outputs
