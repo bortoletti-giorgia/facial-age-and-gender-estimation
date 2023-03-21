@@ -16,4 +16,16 @@ class AgeGroups:
             middles.append(int(round(min(r)+(max(r)-min(r))/2, 0)))
         return middles
     
+    def getGroupFromMiddle(self, middle: int) -> int:
+        middles = AgeGroups().getMiddles()
+        for i in range(len(self.ranges)):
+            if middle == middles[i]:
+                return i
+        return None
+    
+    def getGroupFromAge(self, age: int) -> int:
+        for i, r in enumerate(self.ranges):
+            if age in r:
+                return i
+        return None
     
