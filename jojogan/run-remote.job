@@ -1,0 +1,40 @@
+#!/bin/bash 
+#SBATCH -J JoJoGAN 
+#SBATCH -o /home/bortoletti/out/jojo_%j_output.txt 
+#SBATCH -e /home/bortoletti/out/jojo_%j_errors.txt 
+#SBATCH -t 1-23:30:00 
+#SBATCH -n 1 
+#SBATCH -p allgroups 
+#SBATCH --mem 32G 
+#SBATCH --gres=gpu:rtx 
+
+cd $bortoletti 
+cd JoJoGAN 
+
+srun singularity exec --nv /home/bortoletti/jojogan-container.sif activate jojo 
+
+srun singularity exec --nv /home/bortoletti/jojogan-container.sif python main-create-own-style.py --testimagename='utk.jpg' --stylefolder='style_images/1-1' --checkpointout='pepper_0' 
+srun singularity exec --nv /home/bortoletti/jojogan-container.sif python main-create-own-style.py --testimagename='utk.jpg' --stylefolder='style_images/8-1' --checkpointout='pepper_1' 
+srun singularity exec --nv /home/bortoletti/jojogan-container.sif python main-create-own-style.py --testimagename='utk.jpg' --stylefolder='style_images/16-1' --checkpointout='pepper_2' 
+srun singularity exec --nv /home/bortoletti/jojogan-container.sif python main-create-own-style.py --testimagename='utk.jpg' --stylefolder='style_images/24-1' --checkpointout='pepper_3' 
+srun singularity exec --nv /home/bortoletti/jojogan-container.sif python main-create-own-style.py --testimagename='utk.jpg' --stylefolder='style_images/34-1' --checkpointout='pepper_4' 
+srun singularity exec --nv /home/bortoletti/jojogan-container.sif python main-create-own-style.py --testimagename='utk.jpg' --stylefolder='style_images/44-1' --checkpointout='pepper_5' 
+srun singularity exec --nv /home/bortoletti/jojogan-container.sif python main-create-own-style.py --testimagename='utk.jpg' --stylefolder='style_images/54-1' --checkpointout='pepper_6' 
+srun singularity exec --nv /home/bortoletti/jojogan-container.sif python main-create-own-style.py --testimagename='utk.jpg' --stylefolder='style_images/64-1' --checkpointout='pepper_7' 
+srun singularity exec --nv /home/bortoletti/jojogan-container.sif python main-create-own-style.py --testimagename='utk.jpg' --stylefolder='style_images/74-1' --checkpointout='pepper_8' 
+srun singularity exec --nv /home/bortoletti/jojogan-container.sif python main-create-own-style.py --testimagename='utk.jpg' --stylefolder='style_images/84-1' --checkpointout='pepper_9' 
+srun singularity exec --nv /home/bortoletti/jojogan-container.sif python main-create-own-style.py --testimagename='utk.jpg' --stylefolder='style_images/94-1' --checkpointout='pepper_10' 
+srun singularity exec --nv /home/bortoletti/jojogan-container.sif python main-create-own-style.py --testimagename='utk.jpg' --stylefolder='style_images/108-1' --checkpointout='pepper_11' 
+
+srun singularity exec --nv /home/bortoletti/jojogan-container.sif python main.py --modelname='pepper_0' --testfolder='test_input/utkface-ranges/0'
+srun singularity exec --nv /home/bortoletti/jojogan-container.sif python main.py --modelname='pepper_1' --testfolder='test_input/utkface-ranges/1'
+srun singularity exec --nv /home/bortoletti/jojogan-container.sif python main.py --modelname='pepper_2' --testfolder='test_input/utkface-ranges/2'
+srun singularity exec --nv /home/bortoletti/jojogan-container.sif python main.py --modelname='pepper_3' --testfolder='test_input/utkface-ranges/3'
+srun singularity exec --nv /home/bortoletti/jojogan-container.sif python main.py --modelname='pepper_4' --testfolder='test_input/utkface-ranges/4'
+srun singularity exec --nv /home/bortoletti/jojogan-container.sif python main.py --modelname='pepper_5' --testfolder='test_input/utkface-ranges/5'
+srun singularity exec --nv /home/bortoletti/jojogan-container.sif python main.py --modelname='pepper_6' --testfolder='test_input/utkface-ranges/6'
+srun singularity exec --nv /home/bortoletti/jojogan-container.sif python main.py --modelname='pepper_7' --testfolder='test_input/utkface-ranges/7'
+srun singularity exec --nv /home/bortoletti/jojogan-container.sif python main.py --modelname='pepper_8' --testfolder='test_input/utkface-ranges/8'
+srun singularity exec --nv /home/bortoletti/jojogan-container.sif python main.py --modelname='pepper_9' --testfolder='test_input/utkface-ranges/9'
+srun singularity exec --nv /home/bortoletti/jojogan-container.sif python main.py --modelname='pepper_10' --testfolder='test_input/utkface-ranges/10'
+srun singularity exec --nv /home/bortoletti/jojogan-container.sif python main.py --modelname='pepper_11' --testfolder='test_input/utkface-ranges/11'
