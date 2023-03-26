@@ -21,7 +21,7 @@ df['label'] = ""
 
 for i in range(len(ranges)):
     criteria = "age in @ranges["+str(i)+"]"
-    df.loc[df.eval(criteria), 'label'] = i
+    df.loc[df.eval(criteria), 'age-group'] = i
 
 # Save the updated CSV file
 df.to_csv(csv_path, index=False)

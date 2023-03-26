@@ -33,12 +33,12 @@ for i in range(n_tot_images):
     img = cv2.imread(sample.filepath)
     # gender
     if sample.gender == "female":
-        cv2.imwrite(dir_female_path+"/"+str(i)+".jpg", img)
+        cv2.imwrite(dir_female_path+"/"+sample.filename, img)
     elif sample.gender == "male":
-        cv2.imwrite(dir_male_path+"/"+str(i)+".jpg", img)
+        cv2.imwrite(dir_male_path+"/"+sample.filename, img)
     # age
-    label = sample['label']
+    label = sample['age-group']
     dir_label_path = dir_age_path+str(label)
     if not os.path.isdir(dir_label_path):
         os.mkdir(dir_label_path)
-    cv2.imwrite(dir_label_path+"/"+str(i)+".jpg", img)
+    cv2.imwrite(dir_label_path+"/"+sample.filename, img)
