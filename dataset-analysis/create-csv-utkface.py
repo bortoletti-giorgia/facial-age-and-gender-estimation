@@ -27,6 +27,8 @@ for dirname, _, filenames in os.walk(ds_path):
         splitted = filename.split('_')
         age = splitted[0]
         gender = splitted[1]
+        if gender != str(1) and gender != str(0):
+            print("Image with wrong gender: "+filename)
         race = splitted[2]
         #print(os.path.join(dirname, filename))
         #break
