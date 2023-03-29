@@ -15,8 +15,8 @@ Below is the structure of the local folders:
 ```
 .C:\0_thesis\
 ├── 0_dataset-analysis
-│   ├── add-age-group.py				# Add age-group column in CSV files
-│   ├── age_groups.py					# Definition of age-group
+│   ├── add-age-group.py			# Add age-group column in CSV files
+│   ├── age_groups.py				# Definition of age-group
 │   ├── analyse-adience.ipynb			# Analysis on age and gender distribution in Adience dataset
 │   ├── analyse-imdbwiki.ipynb			# Analysis on age and gender distribution in IMDB-Wiki dataset
 │   ├── analyse-utkface.ipynb			# Analysis on age and gender distribution in UTKFace Align&Crop dataset
@@ -24,9 +24,9 @@ Below is the structure of the local folders:
 │   ├── create-csv-adience.py			# Create CSV file from Adience dataset in DeepLake
 │   ├── create-csv-imdbwiki.py			# Create CSV file from IMDB-Wiki dataset
 │   ├── create-csv-utkface.py			# Create CSV file from UTKFace dataset
-│   ├── create-dataset-folders.ipynb	# Create dataset in gender or age-group folders
+│   ├── create-dataset-folders.ipynb		# Create dataset in gender or age-group folders
 │   ├── create-dataset-json.ipynb		# JSON for Stylegan2-ada-pytorch
-│   ├── resize-images.py				# Resize images with power-of-two size
+│   ├── resize-images.py			# Resize images with power-of-two size
 │   ├── main.ipynb
 
 ├── \dataset
@@ -44,7 +44,7 @@ Below is the structure of the local folders:
 ├── \1_stylegan\
 
 ├── \jojogan-model\
-│   ├── JoJoGAN							# Clone of https://github.com/bortoletti-giorgia/JoJoGAN-Windows
+│   ├── JoJoGAN					# Clone of https://github.com/bortoletti-giorgia/JoJoGAN-Windows
 │   ├── ├── align-faces.py              
 │   ├── ├── main-create-own-style.py
 │   ├── ├── main.py
@@ -56,7 +56,7 @@ Below is the structure of the local folders:
 │   ├── \test-style-config\
 
 ├── \sam-model\
-│   ├── SAM							# Clone of https://github.com/bortoletti-giorgia/SAM
+│   ├── SAM					# Clone of https://github.com/bortoletti-giorgia/SAM
 │   ├── main-sam.job
 
 ├── LICENSE
@@ -143,21 +143,21 @@ Code is heavy and it will be launch in SLURM.
 Your workspace structure should be (“bortoletti” is the example workspace):
 
 ```
-    \home\bortoletti
-    ├── JoJoGAN                           # clone of https://github.com/bortoletti-giorgia/JoJoGAN-Windows
-    ├── ├── inversion_codes               # folder created after first execution
-    ├── ├── style_images                  # folder created after first execution
-    ├── ├── style_images_aligned          # folder created after first execution 
-    ├── ├── models                        # folder created after first execution
-    ├── ├── results                       # folder created after first execution 
-    ├── ├──  main.py                      # main code to run JoJoGAN with pretrained model
-    ├── ├──  main-create-own-style.py     # main code to create a model with your style images 
-	├── ├──  align-faces.py               # optional code that align and crop some face images
+\home\bortoletti
+├── JoJoGAN                           # clone of https://github.com/bortoletti-giorgia/JoJoGAN-Windows
+├── ├── inversion_codes               # folder created after first execution
+├── ├── style_images                  # folder created after first execution
+├── ├── style_images_aligned          # folder created after first execution 
+├── ├── models                        # folder created after first execution
+├── ├── results                       # folder created after first execution 
+├── ├──  main.py                      # main code to run JoJoGAN with pretrained model
+├── ├──  main-create-own-style.py     # main code to create a model with your style images 
+├── ├──  align-faces.py               # optional code that align and crop some face images
 
-    ├── out                               # folder with TXT file with errors and shell output of main.job 
-    │   main.job                          # JOB file for running JoJoGAN 
-	│   main-align.job                    # JOB file for running align-faces.py using JoJoGAN 
-    │   singularity-container.sif         # Singularity container for executing the JOB file
+├── out                               # folder with TXT file with errors and shell output of main.job 
+│   main.job                          # JOB file for running JoJoGAN 
+│   main-align.job                    # JOB file for running align-faces.py using JoJoGAN 
+│   singularity-container.sif         # Singularity container for executing the JOB file
 ```
 
 #### How many style images to use? And which?
