@@ -106,6 +106,13 @@ Environment:
 * Ros naoqi-sdk and pynaoqi: https://wiki.ros.org/nao/Tutorials/Installation 
 * Ros for Pepper: http://wiki.ros.org/pepper/Tutorial_kinetic  
 
+Write on terminal: 
+```echo 'export PYTHONPATH=/home/giorgia/naoqi/pynaoqi-python2.7-2.1.4.13-linux64/:/opt/ros/kinetic/lib/python2.7/dist-packages' >> ~/.bashrc```
+```echo 'export DYLD_LIBRARY_PATH=${DYLD_LIBRARY_PATH}:~/naoqi/pynaoqi-python2.7-2.1.4.13-linux64' >> ~/.bashrc```
+```echo 'export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:~/naoqi/naoqi-sdk-2.1.4.13-linux64/lib' >> ~/.bashrc```
+Check if *naoqi* works, write: ```python``` and then ```import naoqi```. No errors means that the installation is correct.
+
+
 I terminal: ```roscore```
 
 II terminal: ```roslaunch pepper_bringup pepper_full_py.launch nao_ip:=<ip_pepper>```
