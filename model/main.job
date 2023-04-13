@@ -1,0 +1,16 @@
+#!/bin/bash 
+#SBATCH -J CNN
+#SBATCH -o /home/bortoletti/out/cnn_%j_output.txt 
+#SBATCH -e /home/bortoletti/out/cnn_%j_errors.txt 
+#SBATCH -t 20:30:00 
+#SBATCH -n 1
+#SBATCH -p allgroups 
+#SBATCH --mem 32G 
+#SBATCH --gres=gpu:rtx
+
+cd $bortoletti
+cd MODEL
+
+srun singularity exec --nv /home/bortoletti/thesis-container.sif activate thesis 
+
+srun singularity exec --nv /home/bortoletti/thesis-container.sif python 1_train-cnn-model.py
