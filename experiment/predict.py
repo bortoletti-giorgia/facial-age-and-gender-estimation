@@ -1,5 +1,6 @@
 from tensorflow import keras
 import tensorflow as tf
+tf.get_logger().setLevel('ERROR')
 import argparse
 import os
 import numpy as np
