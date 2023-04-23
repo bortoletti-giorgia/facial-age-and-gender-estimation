@@ -104,7 +104,9 @@ while k<5:
 				i += 3
 		if is_valid_image(image):
 			print("Image "+str(k)+" saved.")
-			cv2.imwrite(output_dir+"/image8_"+str(k)+".jpg", image)
+			cv2.imwrite(output_dir+"/rgb_"+str(k)+".jpg", image)
+			gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+			cv2.imwrite(output_dir+"/grayscale_"+str(k)+".jpg", gray)
 			k += 1
 	#time.sleep(0.1)
 

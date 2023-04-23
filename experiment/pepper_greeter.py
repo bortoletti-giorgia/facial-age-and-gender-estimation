@@ -181,10 +181,11 @@ class HumanGreeter(object):
 						i += 3
 				# save image
 				if self.is_valid_image(image):
-					print("Image "+str(k)+" saved.")
-					cv2.imwrite(self.output_dir+"/image_"+str(k)+".jpg", image)
+					cv2.imwrite(self.output_dir+"/rgb_"+str(k)+".jpg", image)
+					gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+					cv2.imwrite(self.output_dir+"/grayscale_"+str(k)+".jpg", gray)
 					k += 1
-					time.sleep(0.1)
+					#time.sleep(0.1)
 		self.video_device.unsubscribe(subscriberID)
 
 	#-------------------------------------------------------------------------------------------
