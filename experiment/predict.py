@@ -68,22 +68,24 @@ for filename in filenames:
 			print("AGE "+str(age_real)+" (real) "+str(age_pred)+" (predicted)")
 			print("GENDER "+str(gender_real)+" (real) "+str(gender_pred)+" (predicted)")
 			'''
+			'''
 			print(filename)
 			print("AGE "+str(age_pred)+" (predicted)")
 			print("GENDER "+str(gender_pred)+" (predicted)")
-			# !!
 			# show the image
 			cv2.imshow(" ("+str(fm)+"), age "+str(age_pred)+", "+gender_pred, gray)
 			cv2.waitKey(0)
+			'''
 cv2.destroyAllWindows() 
-#cv2.waitKey(1)
+
 # Analysis
+age_avg = sum(ages)/len(ages)
 print("Max age: ", max(ages))
 print("Min age: ", min(ages))
-print("Average: ", (sum(ages)/len(ages)))
+print("Average: ", age_avg)
 print("Most gender: ", max(set(genders), key=genders.count))
 
-final_age = sum(ages)/len(ages)
+final_age = np.round(age_avg)
 final_gender = max(set(genders), key=genders.count)
 
 f = open(result_file, "w")
