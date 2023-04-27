@@ -57,6 +57,8 @@ df = df.replace({"gender": gender_mapper})
 training_data, test_data = train_test_split(df, test_size=0.3, shuffle=True)
 test_data.to_csv(results_folder+"/test_data.csv") # save it to work locally
 
+#test_data = pd.read_csv(results_folder+"/test_data.csv")
+
 test_datagen = ImageDataGenerator(rescale=1./255)
 batch_size = 64 # !!
 y_cols = ['age', 'gender']
@@ -69,12 +71,9 @@ test_generator = test_datagen.flow_from_dataframe(test_data,
                                                 target_size = (img_size, img_size),
                                                 class_mode="multi_output",
                                                 shuffle=False,
-                                                batch_size = batch_size)
-
-
+                                                batch_size = batch_size, color_mode="grayscale")
 
 # Create the model
-
 # Set initial gender bias
 # https://www.tensorflow.org/tutorials/structured_data/imbalanced_data?hl=it#clean_split_and_normalize_the_data
 n_male, n_female = np.bincount(df['gender'])
@@ -82,7 +81,7 @@ initial_bias = np.log([n_female/n_male])
 print("Init bias: ", initial_bias)
 output_bias = tf.keras.initializers.Constant(initial_bias)
 
-inputs = Input(shape=(256, 256, 3))
+inputs = Input(shape=(256, 256, 1))
 
 base_model = Conv2D(32, (3, 3), activation = 'relu')(inputs)
 base_model = MaxPooling2D((2, 2))(base_model)
@@ -163,7 +162,7 @@ for f, (train_index, val_index) in enumerate(kfold.split(training_data, training
                                                         y_col = y_cols, 
                                                         target_size = (img_size, img_size),
                                                         class_mode="multi_output",
-                                                        batch_size = batch_size)
+                                                        batch_size = batch_size, color_mode="grayscale")
 
     val_generator = val_datagen.flow_from_dataframe(val_data, 
                                                     directory = ds_path, 
@@ -172,7 +171,7 @@ for f, (train_index, val_index) in enumerate(kfold.split(training_data, training
                                                     target_size = (img_size, img_size),
                                                     class_mode="multi_output",
                                                     shuffle=False,
-                                                    batch_size = batch_size)
+                                                    batch_size = batch_size, color_mode="grayscale")
 
     # CREATE CALLBACKS
     checkpoint = callbacks.ModelCheckpoint(results_folder+'/model_'+str(f)+'.h5', 
@@ -182,7 +181,7 @@ for f, (train_index, val_index) in enumerate(kfold.split(training_data, training
                                         mode ="min", patience = 5, 
                                         restore_best_weights = True)
     callbacks_list = [checkpoint, earlystopping]
-	# FIT THE MODEL
+    # FIT THE MODEL
     history = model.fit(train_generator,
                         steps_per_epoch = n_train // batch_size, 
                         epochs = epochs,
@@ -249,11 +248,10 @@ for f, (train_index, val_index) in enumerate(kfold.split(training_data, training
     tf.keras.backend.clear_session()
 
 # Evaluate the model
-#model = keras.models.load_model(results_folder+'/model')
+model = keras.models.load_model(results_folder+'/model_'+str(n_fold-1))
 #model.evaluate(val_generator)
 
-# Make prediction
-model = keras.models.load_model(results_folder+'/model_'+str(n_fold-1))
+# Make predictions
 prediction = model.predict(test_generator)
 
 print(prediction)
@@ -268,7 +266,7 @@ test_data.astype({'gender': 'int', 'age': 'int'})
 precision = tf.keras.metrics.Precision()
 precision.update_state(test_data["gender"], y_pred_gender)
 print("Precision on gender: ", precision.result().numpy())
-#precision.update_state(test_data["age"], y_pred_age)
+#precision.update_state(y_pred_age, test_data["age"])
 #print("Precision on age: ", precision.result().numpy())
 
 # Recall
@@ -311,6 +309,6 @@ for j, i in enumerate(indices):
     plt.subplot(3,3,j+1)
     plt.axis('off')
     plt.title('Actual: %s, %s\nPred: %s, %s' % (actual_gender, actual_age, pred_gender, pred_age))
-    plt.imshow(Image.open(sample.filepath))
+    plt.imshow(Image.open(sample.filepath), cmap='gray')
 
 plt.savefig(results_folder+"/example.jpg")
