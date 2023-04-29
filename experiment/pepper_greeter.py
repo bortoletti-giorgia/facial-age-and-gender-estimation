@@ -1,6 +1,3 @@
-
-#http://doc.aldebaran.com/2-5/dev/python/examples/vision/face_detection.html
-
 import qi
 import time
 import sys
@@ -14,6 +11,7 @@ THRESHOLD_BLURRY = 70
 class HumanGreeter(object):
 	"""
 	A simple class to react to face detection events.
+	Ispired by http://doc.aldebaran.com/2-5/dev/python/examples/vision/face_detection.html
 	"""
 
 	def __init__(self, app, outputdir):
@@ -40,6 +38,7 @@ class HumanGreeter(object):
 		# ALRobotPosture, ALBasicAwareness, ALVideoDevice
 		self.posture = session.service("ALRobotPosture")
 		self.tts = session.service("ALTextToSpeech")
+		#self.tts.setLanguage("Italian")
 		self.face_detection = session.service("ALFaceDetection")
 		self.people_perception = session.service("ALPeoplePerception")
 		self.awareness = session.service("ALBasicAwareness")
@@ -57,7 +56,6 @@ class HumanGreeter(object):
 		if value == []:  # empty value when the face disappears
 			self.got_face = False
 		elif not self.got_face:
-			self.got_face = True
 			# GAZE DETECTION
 			self.awareness.setEnabled(False) # Disabled person detection
 			print("Someone is looking at me.")
@@ -86,7 +84,7 @@ class HumanGreeter(object):
 			#time.sleep(10.0)
 			self.awareness.setEnabled(True) # Enabled person detection
 			self.tts.say("Ready.")
-			#self.got_face = False
+			self.got_face = True
 
 			# FACE DETECTION
 			'''
@@ -112,7 +110,7 @@ class HumanGreeter(object):
 			'''
 
 	#-------------------------------------------------------------------------------------------
-	def is_valid_image(img):
+	def is_valid_image(self, img):
 		# Load the cascade
 		# https://github.com/opencv/opencv/tree/master/data/haarcascades
 		face_cascade = cv2.CascadeClassifier("haarcascade_frontalface_default.xml")
@@ -181,9 +179,8 @@ class HumanGreeter(object):
 						i += 3
 				# save image
 				if self.is_valid_image(image):
-					cv2.imwrite(self.output_dir+"/rgb_"+str(k)+".jpg", image)
-					gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-					cv2.imwrite(self.output_dir+"/grayscale_"+str(k)+".jpg", gray)
+					print("Image "+str(k)+" saved.")
+					cv2.imwrite(self.output_dir+"/img_"+str(k)+".jpg", image)
 					k += 1
 					#time.sleep(0.1)
 		self.video_device.unsubscribe(subscriberID)
@@ -194,14 +191,12 @@ class HumanGreeter(object):
 		Loop on, wait for events until manual interruption.
 		"""
 		print("Starting HumanGreeter")
-		try:
-			while True:
-				time.sleep(1)
-		except KeyboardInterrupt:
-			print("Interrupted by user, stopping HumanGreeter")
-			self.face_detection.unsubscribe("HumanGreeter")
-			#stop
-			sys.exit(0)
+		while self.got_face == False:
+			time.sleep(1)
+		print("Stopping HumanGreeter")
+		self.face_detection.unsubscribe("HumanGreeter")
+		#stop
+		sys.exit(0)
 
 #-------------------------------------------------------------------------------------------
 if __name__ == "__main__":

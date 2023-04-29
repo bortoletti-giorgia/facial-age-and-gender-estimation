@@ -11,7 +11,7 @@ import sys
 import cv2
 #sys.path.append('./anaconda3/envs/model/lib/python3.8/site-packages')
 
-THRESHOLD_BLURRY = 30
+THRESHOLD_BLURRY = 50
 
 # Arguments
 parser = argparse.ArgumentParser()
