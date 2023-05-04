@@ -1,18 +1,14 @@
-from torchvision import transforms, utils
 from PIL import Image
 import math
 import random
 import os
 
 import numpy as np
-from torch import nn, autograd, optim
-from torch.nn import functional as F
 from tqdm import tqdm
 import argparse
+import matplotlib.pyplot as plt
 
 # JoJoGAN libraries
-from model import *
-from e4e_projection import projection as e4e_projection
 from util import *
 
 # Arguments
@@ -41,11 +37,9 @@ if "rosbag" in inputdir:
             for filename in files:
                 if filename[-4:] == '.jpg': # image
                     filepath = os.path.join(subfolder, filename)
-                    name = strip_path_extension(filepath)+'.pt'
                     # aligns and crops face from the rosbags image
                     try:
                         aligned_face = align_face(filepath, output_size=256, transform_size=256)
-                        my_w = e4e_projection(aligned_face, name, device).unsqueeze(0)
                         finaldir = os.path.join(outputdir, subfolder.split('/')[-1])
                         if not os.path.exists(finaldir):
                             os.mkdir(finaldir)
@@ -58,11 +52,9 @@ else: # folder of images
         if filename[-4:] == '.jpg': # image
             filepath = os.path.join(inputdir, filename)
             if not os.path.exists(os.path.join(outputdir, filename)):
-                name = strip_path_extension(filepath)+'.pt'
                 # aligns and crops face from the rosbags image
                 try:
                     aligned_face = align_face(filepath, output_size=256, transform_size=256)
-                    my_w = e4e_projection(aligned_face, name, device).unsqueeze(0)
                     plt.imsave(os.path.join(outputdir, filename), get_image(aligned_face))
                 except: # no face detected (AssertionError, RuntimeError, ValueError)
                     print("No face detected")
