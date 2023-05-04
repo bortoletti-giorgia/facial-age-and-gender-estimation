@@ -33,6 +33,8 @@ class Experiment:
 	def capture_images(self, ip, port):		
 		# Capture photos and align on faces from Pepper's camera
 		# When a person starts looking at it, it stops and capture images
+		self.ip_robot = str(ip)
+		self.port_robot = str(port)
 		cmd_capture_images = "python pepper_greeter.py --ip='"+str(ip)+"' --port="+str(port)+" --outputdir='"+self.temp_img_folder+"'"
 		# Or it is blocked since beginning and capture images
 		#cmd_capture_images = "python pepper_capture_images.py --ip='"+str(ip)+"' --port="+str(port)+" --outputdir='"+self.temp_img_folder+"'"
@@ -129,19 +131,39 @@ class Experiment:
 			print(model)
 			result_file = self.exp_folder+"/prediction_"+model.split("/")[-2]+".txt"
 			os.system('conda run -n model python predict.py --imagespath="'+self.img_folder+'" --resultfile="'+result_file+'" --modelpath="'+model+'" --colormode="grayscale"')
+	
+	#-------------------------------------------------------------------------------------------
+	def predict_balance_models(self):
+		temp_root = "C:/0_thesis/2_model/TESTING/BALANCE/"
+
+		models_rgb = []
+		models_rgb.append(os.path.join(temp_root, "19fold/model_4"))
+		models_rgb.append(os.path.join(temp_root, "20netto/model_4"))
+		models_rgb.append(os.path.join(temp_root, "20pepper05/model_4"))
+
+		models_gray = []
+		models_gray.append(os.path.join(temp_root, "19foldgray/model_4"))
+		models_gray.append(os.path.join(temp_root, "20nettogray/model_4"))
+		models_gray.append(os.path.join(temp_root, "20pepper05gray/model_4"))
+		
+		#sys.path.remove('/opt/ros/kinetic/lib/python2.7/dist-packages')
+		for model in models_rgb:
+			print(model)
+			result_file = self.exp_folder+"/prediction_balance_"+model.split("/")[-2]+".txt"
+			os.system('conda run -n thesis python predict.py --imagespath="'+self.img_folder+'" --resultfile="'+result_file+'" --modelpath="'+model+'" --colormode="rgb"')
+
+		for model in models_gray:
+			print(model)
+			result_file = self.exp_folder+"/prediction_balance_"+model.split("/")[-2]+".txt"
+			os.system('conda run -n thesis python predict.py --imagespath="'+self.img_folder+'" --resultfile="'+result_file+'" --modelpath="'+model+'" --colormode="grayscale"')
+
+	
 	#-------------------------------------------------------------------------------------------
 	def behave(self):
-		
-		age_group = AgeGroups().getGroupFromAge(self.get_age())
-		
-		if age_group == 0:
-			print()
-		elif age_group == 1:
-			print()
-		elif age_group == 1:
-			print()
-		
-		return None
+		age = self.get_age()
+		gender = self.get_gender()
+		cmd_behave = "python pepper_behave.py --ip='"+self.ip_robot+"' --port="+self.port_robot+" --age="+age+" --gender="+gender
+		os.system(cmd_behave)
 
 #-------------------------------------------------------------------------------------------
 if __name__ == "__main__":
@@ -157,19 +179,23 @@ if __name__ == "__main__":
 
 	start_time = time.time()
 
-	id_exp = 6
-	#while True:
-	exp = Experiment(id_exp, colormode=args.colormode)
-	#exp.capture_images(ip=ip_robot, port=port_robot)
-	#exp.align_images()
-	exp.align_images_jojogan()
-	# PREDICTION
-	#age, gender = exp.predict()
-	#print("Final age: ", age)
-	#print("Final gender: ", gender)
-	#	id_exp += 1
+	subfolders = os.listdir("C:/0_thesis/3_experiment/results/")
+	for s in subfolders:
+		id_exp = int(s)
+		print("Experiment: ", s)
+		#while True:
+		exp = Experiment(id_exp, colormode=args.colormode)
+		#exp.capture_images(ip=ip_robot, port=port_robot)
+		#exp.align_images()
+		#exp.align_images_jojogan()
+		# PREDICTION
+		#age, gender = exp.predict()
+		#print("Final age: ", age)
+		#print("Final gender: ", gender)
+		#	id_exp += 1
 
-	print("--- %s seconds ---" % round(time.time() - start_time, 2))
-	#exp.predict_all_models()
+		#print("--- %s seconds ---" % round(time.time() - start_time, 2))
+		#exp.predict_all_models()
+		exp.predict_balance_models()
 
 
