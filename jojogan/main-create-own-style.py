@@ -30,12 +30,21 @@ from model import *
 from e4e_projection import projection as e4e_projection
 from util import *
 
+# Function to read boolean in arguments
+def str_to_bool(value):
+    if value.lower() in {'false', 'f', '0', 'no', 'n'}:
+        return False
+    elif value.lower() in {'true', 't', '1', 'yes', 'y'}:
+        return True
+    raise ValueError(f'{value} is not a valid boolean value')
+
 # Arguments
 parser = argparse.ArgumentParser()
 parser.add_argument("--checkpointin", help="pretrained stylegan2 with extension", default="stylegan2-ffhq-config-f.pt")
 parser.add_argument("--ckptsize", help="image size of pretrained model", type=int, default=512)
 parser.add_argument("--iter", help="number of iterations", type=int, default=500)
 parser.add_argument("--alpha", help="alpha value", type=float, default=1)
+parser.add_argument("--preservecolor", help="preserve the input image color or not", type=str_to_bool, nargs='?', const=True, default=False)
 
 parser.add_argument("--stylefolder", help="folder where images used for style are saved", type=str, default="style_images")
 parser.add_argument("--testimagename", help="name for the test image with extension", required=True)
@@ -56,6 +65,7 @@ latent_dim = args.ckptsize
 checkpointout = args.checkpointout
 iter = args.iter
 alpha = args.alpha
+preserve_input_color = args.preservecolor
 
 # Creating local folders for local content creation and management
 os.makedirs('inversion_codes', exist_ok=True)
@@ -167,11 +177,11 @@ target_im = utils.make_grid(targets, normalize=True, range=(-1, 1))
 plt.imsave("results/style_reference.jpg", get_image(target_im))
 
 # Finetune StyleGAN
-#alpha =  1 #@param {type:"slider", min:0, max:1, step:0.1}
-alpha = 1-alpha
+#alpha = 1.0 #@param {type:"slider", min:0, max:1, step:0.1}
+alpha = 1 - alpha
 
 # Tries to preserve color of original image by limiting family of allowable transformations. Set to false if you want to transfer color from reference image. This also leads to heavier stylization
-preserve_color = False 
+preserve_color = preserve_input_color
 # Number of finetuning steps. Different style reference may require different iterations. Try 200~500 iterations.
 num_iter = iter
 
@@ -232,4 +242,4 @@ style_images = torch.stack(style_images, 0).to(device)
 plt.imsave("style_images_aligned/"+checkpointout+'.jpg', get_image(utils.make_grid(style_images, normalize=True, range=(-1, 1))))
 
 my_output = torch.cat([style_images, face, my_sample], 0)
-plt.imsave("results/final_sample.jpg", get_image(utils.make_grid(my_output, normalize=True, range=(-1, 1))))
+plt.imsave("results/final_sample_"+str(1-alpha)+"_"+str(preserve_color)+"_"+str(source_filename), get_image(utils.make_grid(my_output, normalize=True, range=(-1, 1))))
