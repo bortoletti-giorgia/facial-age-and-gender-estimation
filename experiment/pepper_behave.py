@@ -17,17 +17,11 @@ from age_groups import *
 
 class AgeGroupBehave(object):
 
-	def __init__(self, app, age, gender):
+	def __init__(self, app):
 		"""
 		Initialisation of qi framework and event detection.
 		"""
 		super(AgeGroupBehave, self).__init__()
-		# Create folder where to save captured images
-		self.age_group = int(AgeGroups().getGroupFromAge(age))
-		if self.age_group == 2 and age >= 18:
-			self.age_group == 3
-		self.gender = gender
-
 		app.start()
 		session = app.session
 		# Get some services
@@ -36,13 +30,13 @@ class AgeGroupBehave(object):
 		self.tts = session.service("ALTextToSpeech")
 		self.animated_speech = session.service("ALAnimatedSpeech")
 		self.tablet_service = session.service("ALTabletService")
-
+		# Set language and speech speed 
 		self.tts.setLanguage("Italian")
 		self.speech_speed = "70"
-
+		# Set image address for behaviors
 		application_id = "thesis-giorgia-e2b93a"
 		self.root_image_path = "http://198.18.0.1/apps/"+application_id+"/"
-
+		# Start with no image on the robot's tablet
 		self.tablet_service.hideImage()
 	
 	#-------------------------------------------------------------------------------------------
@@ -98,13 +92,47 @@ class AgeGroupBehave(object):
 		self.leds_service.fadeRGB("FaceLeds", 1, 1, 1, duration)
 	
 	#-------------------------------------------------------------------------------------------
-	def behave(self):
+	def set_age_group(self, age):
+		"""
+		Age groups are: 0 or 1 or 2 (0-17 years), 3 (18-29 years), 4 (30-39), 5 (40-49), 6 (50-59), 7 (60-69), 8 (over 70).
+		"""
+		age = int(float(age))
+		self.age_group = int(AgeGroups().getGroupFromAge(age))
+		# group 3: 20-29 but add also 18 and 19 
+		if self.age_group == 2 and age >= 18: 
+			self.age_group = 3
+	
+	#-------------------------------------------------------------------------------------------
+	def get_all_age_ranges(self):
+		return [range(0, 17), range(0, 17), range(0, 17), range(18, 29), range(30, 39), range(40, 49), range(50, 59), range(60, 69), range(70-116)]
+
+	def get_age_range(self):
+		self.get_all_age_ranges[int(self.age_group)]
+	
+	#-------------------------------------------------------------------------------------------
+	def say_age_gender(self, age, gender):
+		self.set_age_group(age=age)
+		range = self.get_age_range
+		min_age = min(range)
+		max_age = max(range)
+
+		text = "Secondo me tu sei "
+		text += "un uomo" if gender == "male" else "una donna"
+		text += "e hai da "+str(min_age)+" a "+str(max_age)+" anni."
+		self.say_something(animation_tag = "explain", text=text)
+
+	#-------------------------------------------------------------------------------------------
+	def behave(self, age, gender):
 		"""
 		Reproduce a behavior on Pepper according to the person's age group..
 		"""
-		# 0-2 or 3-17
-		if self.age_group == 0 or self.age_group == 1 or self.age_group == 2 : 
+		self.set_age_group(age=age)
+		self.gender = gender
+
+		# 0-2, 3-12, 13-17
+		if self.age_group == 0 or self.age_group == 1 or self.age_group == 2: 
 			print("Under 18: bad.")
+			self.case_0()
 		# 18-29 because I know that people coming in the lab are over 18
 		elif self.age_group == 3: 
 			print("18-29 years")
@@ -138,9 +166,28 @@ class AgeGroupBehave(object):
 		self.say_something(animation_tag = "enthusiastic", text=text)
 
 	#-------------------------------------------------------------------------------------------
+	def case_0(self): # 0-18 years
+		"""
+		Behavior for people aged betwwen 0 and 17.
+		"""
+		image_path = self.root_image_path+"/0_"+str(self.gender)+".jpg"
+		# UCCELLI
+		text = "Oggi voglio rivelarti alcune curiosit"+u'\xe0'+" sugli uccelli.\n"
+		text += "Sapevi che gli uccelli possono dormire mentre volano? \n"
+		text += "Alcune specie di uccelli marini, come i fringuelli del sonno e i petrelli, possono volare per giorni o addirittura settimane senza posarsi e dormire, perch"+u'\xe9'+" hanno la capacit"+u'\xe0'+" di dormire mentre volano. \n"
+		text += "In questo stato di sonno, solo met"+u'\xe0'+" del loro cervello si riposa, mentre l'altra met"+u'\xe0'+" rimane sveglia e si occupa di mantenere il volo e l'orientamento dell'uccello. \n"
+		text += "Questo fenomeno "+u'\xe8'+" chiamato sonno uniemisferico ed "+u'\xe8'+" un adattamento che consente agli uccelli di coprire grandi distanze senza dover interrompere il volo per dormire."
+		# Show image
+		self.tablet_service.preLoadImage(image_path)
+		self.tablet_service.showImage(image_path)
+		# Start speaking
+		self.say_something(animation_tag = "explain", text=text)
+		# Hide image
+		self.tablet_service.hideImage()
+
 	def case_3(self): # 18-29 years
 		"""
-		Behavior for persons aged between 18 and 29.
+		Behavior for people aged between 18 and 29.
 		"""
 		rand = random.randint(0, 1)
 		image_path = self.root_image_path+"/3_"+str(rand)+"_"+str(self.gender)+".jpg"
@@ -165,7 +212,7 @@ class AgeGroupBehave(object):
 
 	def case_4(self): # 30-39 years
 		"""
-		Behavior for persons aged between 30 and 39.
+		Behavior for people aged between 30 and 39.
 		"""
 		rand = random.randint(0, 1)
 		# TORRI GEMELLE
@@ -194,13 +241,13 @@ class AgeGroupBehave(object):
 
 	def case_5(self): # 40-49 years
 		"""
-		Behavior for persons aged between 40 and 49.
+		Behavior for people aged between 40 and 49.
 		"""
 		rand = random.randint(0, 1)
 		image_path = self.root_image_path+"/5_"+str(rand)+"_"+str(self.gender)+".jpg"
 		# MICHAEL JACKSON
 		if rand == 0:
-			text = "Oggi voglio rivelarti alcune curiosit"+u'\xe0'+" su Michael Jackson\n"
+			text = "Oggi voglio rivelarti alcune curiosit"+u'\xe0'+" su Michael Jackson.\n"
 			text += "Jackson aveva una passione per i parchi divertimenti e voleva costruire il suo proprio parco divertimenti chiamato Neverland. La propriet"+u'\xe0'+" era ispirata all'isola immaginaria di Peter Pan, e comprendeva attrazioni come una ruota panoramica, una montagna russa e un treno fantasma\n"
 			text += "Inoltre, durante la registrazione del brano Beat It, Jackson ha fatto una scommessa con Eddie Van Halen, il chitarrista che ha suonato la chitarra solista nella canzone. Jackson gli ha chiesto di suonare il riff di chitarra pi"+u'\xf9'+" veloce possibile, e gli ha promesso che se ci fosse riuscito, gli avrebbe dato una Porsche. Van Halen ha fatto il riff perfettamente e Jackson ha mantenuto la sua promessa regalando a Van Halen una Porsche."
 		# MURO DI BERLINO
@@ -218,7 +265,7 @@ class AgeGroupBehave(object):
 
 	def case_6(self): # 50-59 years
 		"""
-		Behavior for persons aged between 50 and 59.
+		Behavior for people aged between 50 and 59.
 		"""
 		rand = random.randint(0, 1)
 		image_path = self.root_image_path+"/6_"+str(rand)+"_"+str(self.gender)+".jpg"
@@ -246,7 +293,7 @@ class AgeGroupBehave(object):
 
 	def case_7(self): # 60-69 years
 		"""
-		Behavior for persons aged between 60 and 69.
+		Behavior for people aged between 60 and 69.
 		"""
 		rand = random.randint(0, 2)
 		image_path = self.root_image_path+"/7_"+str(rand)+"_"+str(self.gender)+".jpg"
@@ -275,7 +322,7 @@ class AgeGroupBehave(object):
 
 	def case_8(self): # over 70
 		"""
-		Behavior for persons aged over 70.
+		Behavior for people aged over 70.
 		"""
 		image_path = self.root_image_path+"/8_0_"+str(self.gender)+".jpg"
 		# SBARCO SULLA LUNA
@@ -310,6 +357,5 @@ if __name__ == "__main__":
 		"Please check your script arguments. Run with -h option for help.")
 		sys.exit(1)
 
-	human_greeter = AgeGroupBehave(app=app, age=args.age, gender=args.gender)
-
-	human_greeter.behave()
+	human_greeter = AgeGroupBehave(app=app)
+	human_greeter.behave(age=args.age, gender=args.gender)

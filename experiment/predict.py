@@ -1,3 +1,14 @@
+'''
+Make a prediction of age and gender given 'rgb' or 'grayscale' images of a person's face.
+The model used, the image folder, the color mode and the TXT file where the prediction is to be saved must be passed as arguments. 
+Arguments:
+- modelpath: filepath where it is saved the "saved_model.pb" of a Keras model
+- resulfile: filepath of the TXT file to save prediction in the format
+	int(<age>),<gender> where gender is "female" or "male"
+- imagespath: where the images on which to make the prediction are saved
+- colormode: images color mode ("rgb" or "grayscale")
+'''
+
 from tensorflow import keras
 import tensorflow as tf
 tf.get_logger().setLevel('ERROR')

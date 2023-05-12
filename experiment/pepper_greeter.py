@@ -5,6 +5,9 @@ disables its "ALBasicAwareness" module, present itself and capture some face ima
 It saves only 5 valid images in "outputdir" based on "is_valid_image" method.
 '''
 
+#!/usr/bin/python
+# -*- coding: UTF-8 -*-
+
 import qi
 import time
 import sys
@@ -12,9 +15,9 @@ import argparse
 import numpy as np
 import os
 import cv2
-import multiprocessing
 
 THRESHOLD_BLURRY = 70
+SPEECH_SPEED = "80"
 
 def is_valid_image(img):
 	"""
@@ -59,16 +62,22 @@ def is_valid_image(img):
 
 class HumanGreeter(object):
 
-	def __init__(self, app, outputdir):
+	def __init__(self, app, image_folder, not_valid_image_folder):
 		"""
 		Initialisation of qi framework and event detection.
 		"""
 		super(HumanGreeter, self).__init__()
-		# Create folder where to save captured images
-		self.output_dir = outputdir
-		if not os.path.exists(self.output_dir):
-			os.mkdir(self.output_dir)
 		
+		# Create folder where to save VALID captured images
+		self.image_folder = image_folder
+		if not os.path.exists(image_folder):
+			os.mkdir(image_folder)
+
+		# Create folder where to save NOT VALID captured images
+		self.not_valid_image_folder = not_valid_image_folder
+		if not os.path.exists(not_valid_image_folder):
+			os.mkdir(not_valid_image_folder)
+
 		app.start()
 		session = app.session
 		# Get the service ALMemory.
@@ -79,13 +88,10 @@ class HumanGreeter(object):
 		self.subscriber_face = self.memory.subscriber("FaceDetected")
 		#self.people_perception = session.service("ALTracker")
 		self.subscriber_people = self.memory.subscriber("PeoplePerception/PeopleDetected")
-		# Get the services ALTextToSpeech, ALFaceDetection, ALPeoplePerception,
-		# ALRobotPosture, ALBasicAwareness, ALVideoDevice
+		# Get the services ALTextToSpeech, ALFaceDetection, ALPeoplePerception, ALRobotPosture, ALBasicAwareness, ALVideoDevice
 		self.posture = session.service("ALRobotPosture")
 		self.tts = session.service("ALTextToSpeech")
 		self.animated_speech = session.service("ALAnimatedSpeech")
-		#self.tts.setLanguage("Italian")
-		#self.animated_speech.setLanguage("Italian")
 		self.face_detection = session.service("ALFaceDetection")
 		self.people_perception = session.service("ALPeoplePerception")
 		self.awareness = session.service("ALBasicAwareness")
@@ -94,6 +100,7 @@ class HumanGreeter(object):
 		self.face_detection.subscribe("HumanGreeter")
 		self.awareness.setEnabled(True) # Robot is enabled for catching a person
 		self.got_face = False
+		self.tts.setLanguage("Italian")
 		
     #-------------------------------------------------------------------------------------------
 	def on_human_tracked(self, value):
@@ -112,14 +119,7 @@ class HumanGreeter(object):
 			# SAVE FACE IMAGES and PEPPER PRESENTATION
 			self.tts.say("Per favore rimane un attimo dove sei.")
 
-			p1 = multiprocessing.Process(target=self.capture_images)
-			p2 = multiprocessing.Process(target=self.introduce_robot)
-			# Start both processes
-			p1.start()
-			p2.start()
-			# Wait for both processes to finish
-			p1.join()
-			p2.join()
+			self.capture_images()
 
 			self.awareness.setEnabled(True) # Enabled person catching
 			self.tts.say("Grazie.")
@@ -178,7 +178,8 @@ class HumanGreeter(object):
 		image = np.zeros((height, width, 3), np.uint8)
 
 		# get image
-		k = 0
+		k = 0 # for valid images
+		w = 0 # for not valid images
 		while k < 5:
 			result = self.video_device.getImageRemote(subscriberID)
 			
@@ -199,12 +200,24 @@ class HumanGreeter(object):
 				# save image
 				if is_valid_image(image):
 					print("Image "+str(k)+" saved.")
-					cv2.imwrite(self.output_dir+"/img_"+str(k)+".jpg", image)
+					cv2.imwrite(self.image_folder+"/img_"+str(k)+".jpg", image)
 					k += 1
-					#time.sleep(0.1)
+				else:
+					cv2.imwrite(self.not_valid_image_folder+"/img_"+str(w)+".jpg", image)
+					w += 1
 			if k == 5:
 				print("Capturing done.")
 		self.video_device.unsubscribe(subscriberID)
+
+	#-------------------------------------------------------------------------------------------
+	def say_something(self, animation_tag, text):
+		"""
+		Say the given 'text' with the animation from 'animation_tag'. 
+		"""
+		sentence = "\RSPD="+SPEECH_SPEED+"\ "
+		sentence += "^start(%s) %s ^wait(%s)" % (animation_tag, text, animation_tag)
+		sentence +=  "\RST\ "
+		self.animated_speech.say(sentence)
 
 	#-------------------------------------------------------------------------------------------
 	def introduce_robot(self):
@@ -214,18 +227,21 @@ class HumanGreeter(object):
 		# Pepper default tags:
 		# http://doc.aldebaran.com/2-5/naoqi/motion/alanimationplayer-advanced.html#animationplayer-list-behaviors-pepper
 		tag = "me"
-		text = "Eccomi qui. Mi presento: sono Pepper. Sono un robot umanoide sviluppato da Softbank Robotics. Ho un'altezza di circa 1 metro e 20 centimetri e un peso di circa 28 chili. "
-		text += "Sono stato sviluppato per interagire con le persone e fornire assistenza, intrattenimento o qualsiasi cosa di cui abbiano bisogno. "
-		text += "Sono in grado di comprendere il linguaggio naturale, riconoscere i volti e i movimenti delle persone, e comunicare con gesti e movimenti del corpo."
-		text += "Sono un robot molto popolare in Giappone e in altri paesi asiatici, ma sto guadagnando sempre più popolarità in tutto il mondo. "
+		text = "Mi presento: sono Pepper. Sono un robot umanoide sviluppato da Softbank Robotics nel 2014. \n"
 		text += "Spero di farti divertire. Grazie per interagire con me!"
-
-		self.animated_speech.say("^start(%s) %s ^wait(%s)" % (tag, text, tag))
+		'''
+		text += "Sono alto 1 metro e 20 e peso 28 chili. \n"
+		text += "Sono stato sviluppato per interagire con le persone e fornire assistenza, intrattenimento o qualsiasi cosa di cui abbiano bisogno. \n"
+		text += "Sono in grado di comprendere il linguaggio naturale, riconoscere i volti e i movimenti delle persone, e comunicare con gesti e movimenti del corpo. \n"
+		text += "Sono un robot molto popolare in Giappone e in altri paesi asiatici, ma sto guadagnando sempre pi"+u'\xf9'+" popolarit"+u'\xe0'+" in tutto il mondo. \n"
+		text += "Spero di farti divertire. Grazie per interagire con me!"
+		'''
+		self.say_something(animation_tag=tag, text=text)
 
 	#-------------------------------------------------------------------------------------------
 	def run(self):
 		"""
-		Loop on, wait for events until manual interruption.
+		Loop on, wait for events until intercepting a single person.
 		"""
 		print("Starting HumanGreeter")
 		while self.got_face == False:
@@ -233,7 +249,7 @@ class HumanGreeter(object):
 		print("Stopping HumanGreeter")
 		self.face_detection.unsubscribe("HumanGreeter")
 		#stop
-		sys.exit(0)
+		#sys.exit(0)
 
 #-------------------------------------------------------------------------------------------
 if __name__ == "__main__":
@@ -252,5 +268,5 @@ if __name__ == "__main__":
 		"Please check your script arguments. Run with -h option for help.")
 		sys.exit(1)
 
-	human_greeter = HumanGreeter(app, args.outputdir)
+	human_greeter = HumanGreeter(app)
 	human_greeter.run()

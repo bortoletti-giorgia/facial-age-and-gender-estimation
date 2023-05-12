@@ -1,14 +1,20 @@
+
+#!/usr/bin/python
+# -*- coding: UTF-8 -*-
+
 import os
 import sys
 import argparse
 import time
-from age_groups import *
 import cv2
 from pepper_greeter import *
+from pepper_behave import *
+import multiprocessing
+import signal
 
 class Experiment:
-	#root = "/home/giorgia/0_thesis/3_experiment/"
-	root = "C:/0_thesis/3_experiment/"
+	root = "/home/giorgia/0_thesis/3_experiment/"
+	#root = "C:/0_thesis/3_experiment/"
 
 	#-------------------------------------------------------------------------------------------
 	def __init__(self, id_exp, colormode="rgb"):
@@ -19,13 +25,20 @@ class Experiment:
 		if not os.path.exists(self.exp_folder):
 			os.mkdir(self.exp_folder)
 
+		# Cropped and aligned images 
 		self.img_folder = os.path.join(self.exp_folder, "photos/")
 		if not os.path.exists(self.img_folder):
 			os.mkdir(self.img_folder)
 
+		# Valid captured images
 		self.temp_img_folder =  os.path.join(self.exp_folder, "temp_photos/")
 		if not os.path.exists(self.temp_img_folder):
 			os.mkdir(self.temp_img_folder)
+
+		# Not valid captured images -> for future experiments
+		self.trash_img_folder =  os.path.join(self.exp_folder, "trash_photos/")
+		if not os.path.exists(self.trash_img_folder):
+			os.mkdir(self.trash_img_folder)
 
 		self.colormode = colormode
 		if colormode == "rgb":
@@ -33,10 +46,36 @@ class Experiment:
 		elif colormode == "grayscale":
 			self.model_path = os.path.join(self.root, "models/gray_no_alpha/model_4")
 
+		# Prediction output TXT file
+		self.prediction_file = self.exp_folder+"/prediction_"+self.colormode+".txt"
+
+	#-------------------------------------------------------------------------------------------
+	def init_robot(self, ip, port, image_folder, not_valid_image_folder):
+		"""
+		Create two robot sessions: HumanGreeter and AgeGroupBehave.
+		Two different instances because each has specific services.
+		Return True if connection is possible, False otherwise.
+		"""
+		# Connect to the robot
+		try:
+			# Initialize qi framework.
+			connection_url = "tcp://" + str(ip) + ":" + str(port)
+			app = qi.Application(["HumanGreeter", "--qi-url=" + connection_url])
+		except RuntimeError:
+			print ("Can't connect to Naoqi at ip \"" + args.ip + "\" on port " + str(args.port) +".\n"
+			"Please check your script arguments. Run with -h option for help.")
+			return False
+
+		# Two different instances because each has specific services.
+		self.robot_greeter = HumanGreeter(app=app, image_folder=image_folder, not_valid_image_folder=not_valid_image_folder)
+		self.robot_behave = AgeGroupBehave(app=app)
+		return True
+
 	#-------------------------------------------------------------------------------------------
 	def capture_images(self, ip, port):		
 		"""
-		Capture photos from Pepper's camera.
+		Calling the file 'pepper_greeter.py', capture photos from Pepper's camera.
+		Pepper does NOT present itself.
 		"""
 		# When a person starts looking at it, it stops and capture images
 		self.ip_robot = str(ip)
@@ -91,7 +130,8 @@ class Experiment:
 	#-------------------------------------------------------------------------------------------
 	def crop_images_jojogan(self):
 		"""
-		Align and crop images on face according to JoJoGAN alignment. The newly cropped images are used as input for prediction.
+		Activate the Anaconda environment 'jojo' and 
+		align and crop images on face according to JoJoGAN alignment. The newly cropped images are used as input for prediction.
 		"""
 		print("Start to align and crop images with JOJOGAN.")
 		# Activate the "jojo" Anaconda env
@@ -102,21 +142,12 @@ class Experiment:
 	#-------------------------------------------------------------------------------------------
 	def predict(self):
 		"""
-		Return an age and gender prediction in a TXT file inside the experiment main folder.
+		Activate the Anaconda environment 'model' and 
+		return an age and gender prediction in a TXT file inside the experiment main folder.
 		TXT file structure: <age>,<gender>. Age is an integer. Gender is "female" or "male".
 		"""
-		# Prediction output TXT file
-		result_file = self.exp_folder+"/prediction_"+self.colormode+".txt"
 		# Activate the "model" Anaconda env and run predict.py script
-		os.system('conda run -n model python predict.py --imagespath="'+self.img_folder+'" --resultfile="'+result_file+'" --modelpath="'+self.model_path+'" --colormode="'+self.colormode+"'")
-		# Read the TXT prediction file
-		# and save age and gender in the experiment object
-		f = open(result_file, "r")
-		content = f.read()
-		self.age = content.split(",")[0]
-		self.gender = content.split(",")[1]
-		f.close()
-		return self.age, self.gender
+		os.system('conda run -n model python predict.py --imagespath="'+self.img_folder+'" --resultfile="'+self.prediction_file+'" --modelpath="'+self.model_path+'" --colormode="'+self.colormode+'"')
 	
 	#-------------------------------------------------------------------------------------------
 	def get_age(self):
@@ -187,13 +218,59 @@ class Experiment:
 	#-------------------------------------------------------------------------------------------
 	def behave(self):
 		"""
-		Reproduce a customized behavior on Pepper based on experiment's age and gender.
+		Calling the file 'pepper_behave.py', reproduce a customized behavior on Pepper based on experiment's age and gender.
 		"""
 		age = self.get_age()
 		gender = self.get_gender()
 		cmd_behave = "python pepper_behave.py --ip='"+self.ip_robot+"' --port="+self.port_robot+" --age="+age+" --gender="+gender
 		os.system(cmd_behave)
 
+	#-------------------------------------------------------------------------------------------
+	def run(self):	
+		"""
+		Run the experiment. Capture face images and crop them while the robot presents itself.
+		Predict age and gender. Do some customized behaviors based on the prediction.
+		"""	
+		# Init robot
+		if not self.init_robot(ip=ip_robot, port=port_robot, image_folder=self.temp_img_folder, not_valid_image_folder=self.trash_img_folder):
+			sys.exit(1)
+
+		# Capture images
+		self.robot_greeter.run()
+
+		# At this point capturing is done -> 
+		# In PARALLEL:
+		# 1: Crop images on faces, then predict age and gender
+		# 2: Pepper introduces itself
+		process_crop_images = multiprocessing.Process(target=self.crop_images_jojogan)
+		process_intro_robot = multiprocessing.Process(target=self.robot_greeter.introduce_robot)
+		process_predict = multiprocessing.Process(target=self.predict)
+		
+		process_intro_robot.start()
+		process_crop_images.start()
+		#process_intro_robot.join()
+		process_crop_images.join()
+		
+		if not process_crop_images.is_alive():
+			process_crop_images.terminate()
+			process_predict.start()
+			process_predict.join()
+
+		if not process_predict.is_alive():	
+			# PREDICTION
+			# At this point cropping is done -> Proceed with prediction
+			#self.predict()
+			# Read the TXT prediction file
+			# and save age and gender in the experiment object
+			f = open(self.prediction_file, "r")
+			content = f.read()
+			self.age = content.split(",")[0]
+			self.gender = content.split(",")[1]
+			f.close()
+			print("Final age: ", self.age)
+			print("Final gender: ", self.gender)
+			# DO BEHAVIORS
+			#self.robot_behave.behave(age=self.age, gender=self.gender)	
 
 #-------------------------------------------------------------------------------------------
 if __name__ == "__main__":
@@ -207,21 +284,15 @@ if __name__ == "__main__":
 	ip_robot = args.ip
 	port_robot = args.port
 
-
+	# START
 	start_time = time.time()
-	id_exp = int(s)
-	print("Experiment: ", s)
-	#while True:
+	# Init experiment
+	id_exp = 24
+	print("Experiment: ", str(id_exp))
 	exp = Experiment(id_exp, colormode=args.colormode)
-	# CAPTURE IMAGES
-	exp.capture_images(ip=ip_robot, port=port_robot)
-	# ALIGN AND CROP IMAGES ON FACE
-	exp.crop_images_jojogan()
-	# PREDICTION
-	age, gender = exp.predict()
-	print("Final age: ", age)
-	print("Final gender: ", gender)
-	
+	# Run
+	exp.run()
+	# END
 	print("--- %s seconds ---" % round(time.time() - start_time, 2))
 
 	''' ANALYSES ALL EXPERIMENTS
@@ -229,19 +300,8 @@ if __name__ == "__main__":
 	for s in subfolders:
 		id_exp = int(s)
 		print("Experiment: ", s)
-		#while True:
 		exp = Experiment(id_exp, colormode=args.colormode)
-		# CAPTURE IMAGES
-		exp.capture_images(ip=ip_robot, port=port_robot)
-		# ALIGN AND CROP IMAGES ON FACE
-		exp.crop_images_jojogan()
 		# PREDICTION
-		age, gender = exp.predict()
-		print("Final age: ", age)
-		print("Final gender: ", gender)
-		
-		print("--- %s seconds ---" % round(time.time() - start_time, 2))
-
 		#exp.predict_all_models()
 		#exp.predict_balance_models()
 	'''
