@@ -15,13 +15,20 @@ import argparse
 import random
 from age_groups import *
 
-class AgeGroupBehave(object):
+SPEECH_SPEED = "80"
+
+class AgeGroupBehavior(object):
+
+	age_ranges = [range(0, 18), range(0, 18), range(0, 18),
+	       range(18, 30), range(30, 40), range(40, 50), 
+		   range(50, 60), range(60, 70), range(70, 117)]
 
 	def __init__(self, app):
 		"""
 		Initialisation of qi framework and event detection.
 		"""
-		super(AgeGroupBehave, self).__init__()
+		super(AgeGroupBehavior, self).__init__()
+		
 		app.start()
 		session = app.session
 		# Get some services
@@ -32,7 +39,6 @@ class AgeGroupBehave(object):
 		self.tablet_service = session.service("ALTabletService")
 		# Set language and speech speed 
 		self.tts.setLanguage("Italian")
-		self.speech_speed = "70"
 		# Set image address for behaviors
 		application_id = "thesis-giorgia-e2b93a"
 		self.root_image_path = "http://198.18.0.1/apps/"+application_id+"/"
@@ -44,13 +50,13 @@ class AgeGroupBehave(object):
 		"""
 		Say the given 'text' with the animation from 'animation_tag'. 
 		"""
-		sentence = "\RSPD="+self.speech_speed+"\ "
+		sentence = "\RSPD="+SPEECH_SPEED+"\ "
 		sentence += "^start(%s) %s ^wait(%s)" % (animation_tag, text, animation_tag)
 		sentence +=  "\RST\ "
 		self.animated_speech.say(sentence)
 
     #-------------------------------------------------------------------------------------------
-	def test_behave(self):
+	def test_behavior(self):
 		
 		# Farlo stare fermo da quando intercetta una persona??
 		print("Test animations.")
@@ -98,33 +104,34 @@ class AgeGroupBehave(object):
 		"""
 		age = int(float(age))
 		self.age_group = int(AgeGroups().getGroupFromAge(age))
-		# group 3: 20-29 but add also 18 and 19 
+		# group 3: 20-29, but add also 18 and 19 
 		if self.age_group == 2 and age >= 18: 
 			self.age_group = 3
 	
 	#-------------------------------------------------------------------------------------------
-	def get_all_age_ranges(self):
-		return [range(0, 17), range(0, 17), range(0, 17), range(18, 29), range(30, 39), range(40, 49), range(50, 59), range(60, 69), range(70-116)]
-
 	def get_age_range(self):
-		self.get_all_age_ranges[int(self.age_group)]
+		return self.age_ranges[int(self.age_group)]
 	
 	#-------------------------------------------------------------------------------------------
-	def say_age_gender(self, age, gender):
+	def explicit_behavior(self, age, gender):
+		"""
+		Say age range and gender explicitly.
+		"""
 		self.set_age_group(age=age)
-		range = self.get_age_range
-		min_age = min(range)
-		max_age = max(range)
+		r = self.get_age_range()
+		print("Age range:", r)
+		min_age = min(r)
+		max_age = max(r)
 
 		text = "Secondo me tu sei "
 		text += "un uomo" if gender == "male" else "una donna"
-		text += "e hai da "+str(min_age)+" a "+str(max_age)+" anni."
+		text += ".\n La tua et"+u'\xe0'+" "+u'\xe8'+" compresa tra "+str(min_age)+" e "+str(max_age)+" anni."
 		self.say_something(animation_tag = "explain", text=text)
 
 	#-------------------------------------------------------------------------------------------
-	def behave(self, age, gender):
+	def implicit_behavior(self, age, gender):
 		"""
-		Reproduce a behavior on Pepper according to the person's age group..
+		Reproduce a behavior on Pepper according to the person's age group.
 		"""
 		self.set_age_group(age=age)
 		self.gender = gender
@@ -136,33 +143,46 @@ class AgeGroupBehave(object):
 		# 18-29 because I know that people coming in the lab are over 18
 		elif self.age_group == 3: 
 			print("18-29 years")
-			self.case_3()
+			self.case_1()
 		# 30-39 years
 		elif self.age_group == 4: 
 			print("30-39 years")
-			self.case_4()
+			self.case_2()
 		# 40-49 years
 		elif self.age_group == 5: 
 			print("40-49 years")
-			self.case_5()
+			self.case_3()
 		# 50-59 years
 		elif self.age_group == 6: 
 			print("50-59 years")
-			self.case_6()
+			self.case_4()
 		# 60-69 years
 		elif self.age_group == 7: 
 			print("60-69 years")
-			self.case_7()
+			self.case_5()
 		# over 70
 		else: 
 			print("Over 70 years")
-			self.case_8()
+			self.case_6()
 
-		# Final greetings
+	#-------------------------------------------------------------------------------------------
+	def say_final_greetings(self):
+		"""
+		Robot says final greetings.
+		"""
 		text = "Grazie per aver partecipato a questo esperimento. \n"
 		text += "Spero che l'esperienza sia stata interessante e utile per te. \n" 
 		text += "I dati raccolti ci aiuteranno a migliorare le nostre tecnologie e a creare soluzioni sempre pi"+u'\xf9'+" avanzate per il futuro. \n"
-		text += "Ti ringrazio ancora per la tua partecipazione e ti auguro una buona giornata."
+		text += "Ti auguro una buona giornata."
+		self.say_something(animation_tag = "enthusiastic", text=text)
+
+	#-------------------------------------------------------------------------------------------
+	def say_intermediate_greetings(self):
+		"""
+		Robot says intermediate greetings.
+		"""
+		text = "Si conclude qui la prima parte dell'esperimento. \n"
+		text += "Ci sentiamo tra poco."
 		self.say_something(animation_tag = "enthusiastic", text=text)
 
 	#-------------------------------------------------------------------------------------------
@@ -185,7 +205,7 @@ class AgeGroupBehave(object):
 		# Hide image
 		self.tablet_service.hideImage()
 
-	def case_3(self): # 18-29 years
+	def case_1(self): # 18-29 years
 		"""
 		Behavior for people aged between 18 and 29.
 		"""
@@ -210,7 +230,7 @@ class AgeGroupBehave(object):
 		# Hide image
 		self.tablet_service.hideImage()
 
-	def case_4(self): # 30-39 years
+	def case_2(self): # 30-39 years
 		"""
 		Behavior for people aged between 30 and 39.
 		"""
@@ -239,7 +259,7 @@ class AgeGroupBehave(object):
 		# Hide image
 		self.tablet_service.hideImage()
 
-	def case_5(self): # 40-49 years
+	def case_3(self): # 40-49 years
 		"""
 		Behavior for people aged between 40 and 49.
 		"""
@@ -263,7 +283,7 @@ class AgeGroupBehave(object):
 		# Hide image
 		self.tablet_service.hideImage()
 
-	def case_6(self): # 50-59 years
+	def case_4(self): # 50-59 years
 		"""
 		Behavior for people aged between 50 and 59.
 		"""
@@ -291,7 +311,7 @@ class AgeGroupBehave(object):
 		# Hide image
 		self.tablet_service.hideImage()
 
-	def case_7(self): # 60-69 years
+	def case_5(self): # 60-69 years
 		"""
 		Behavior for people aged between 60 and 69.
 		"""
@@ -320,7 +340,7 @@ class AgeGroupBehave(object):
 		# Hide image
 		self.tablet_service.hideImage()
 
-	def case_8(self): # over 70
+	def case_6(self): # over 70
 		"""
 		Behavior for people aged over 70.
 		"""
@@ -357,5 +377,5 @@ if __name__ == "__main__":
 		"Please check your script arguments. Run with -h option for help.")
 		sys.exit(1)
 
-	human_greeter = AgeGroupBehave(app=app)
+	human_greeter = AgeGroupBehavior(app=app)
 	human_greeter.behave(age=args.age, gender=args.gender)

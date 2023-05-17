@@ -208,27 +208,47 @@ class HumanGreeter(object):
 			if k == 5:
 				print("Capturing done.")
 		self.video_device.unsubscribe(subscriberID)
+		self.face_detection.unsubscribe("HumanGreeter")
 
 	#-------------------------------------------------------------------------------------------
 	def say_something(self, animation_tag, text):
 		"""
 		Say the given 'text' with the animation from 'animation_tag'. 
 		"""
+		# Pepper default tags:
+		# http://doc.aldebaran.com/2-5/naoqi/motion/alanimationplayer-advanced.html#animationplayer-list-behaviors-pepper
 		sentence = "\RSPD="+SPEECH_SPEED+"\ "
 		sentence += "^start(%s) %s ^wait(%s)" % (animation_tag, text, animation_tag)
 		sentence +=  "\RST\ "
 		self.animated_speech.say(sentence)
 
 	#-------------------------------------------------------------------------------------------
-	def introduce_robot(self):
+	def introduce_robot_1(self):
+		"""
+		Pepper robot presents itself.
+		"""		
+		tag = "me"
+		text = "Mi presento: sono Pepper. Sono un robot umanoide sviluppato da Softbank Robotics nel 2014. \n"
+		text += "Spero che questa parte di esperimento sar"+u'\xe0'+" piacevole."
+		'''
+		text += "Sono alto 1 metro e 20 e peso 28 chili. \n"
+		text += "Sono stato sviluppato per interagire con le persone e fornire assistenza, intrattenimento o qualsiasi cosa di cui abbiano bisogno. \n"
+		text += "Sono in grado di comprendere il linguaggio naturale, riconoscere i volti e i movimenti delle persone, e comunicare con gesti e movimenti del corpo. \n"
+		text += "Sono un robot molto popolare in Giappone e in altri paesi asiatici, ma sto guadagnando sempre pi"+u'\xf9'+" popolarit"+u'\xe0'+" in tutto il mondo. \n"
+		text += "Spero di farti divertire. Grazie per interagire con me!"
+		'''
+		self.say_something(animation_tag=tag, text=text)
+
+	#-------------------------------------------------------------------------------------------
+	def introduce_robot_2(self):
 		"""
 		Pepper robot presents itself.
 		"""
 		# Pepper default tags:
 		# http://doc.aldebaran.com/2-5/naoqi/motion/alanimationplayer-advanced.html#animationplayer-list-behaviors-pepper
 		tag = "me"
-		text = "Mi presento: sono Pepper. Sono un robot umanoide sviluppato da Softbank Robotics nel 2014. \n"
-		text += "Spero di farti divertire. Grazie per interagire con me!"
+		text = "Mi presento: sono Pepper. Sono un robot sviluppato per interagire con le persone e fornire assistenza, intrattenimento o qualsiasi cosa di cui abbiano bisogno. \n"
+		text += "Spero che questa parte dell'esperimento sia di tuo gradimento."
 		'''
 		text += "Sono alto 1 metro e 20 e peso 28 chili. \n"
 		text += "Sono stato sviluppato per interagire con le persone e fornire assistenza, intrattenimento o qualsiasi cosa di cui abbiano bisogno. \n"
@@ -247,7 +267,6 @@ class HumanGreeter(object):
 		while self.got_face == False:
 			time.sleep(1)
 		print("Stopping HumanGreeter")
-		self.face_detection.unsubscribe("HumanGreeter")
 		#stop
 		#sys.exit(0)
 
@@ -270,3 +289,4 @@ if __name__ == "__main__":
 
 	human_greeter = HumanGreeter(app)
 	human_greeter.run()
+	sys.exit(0)

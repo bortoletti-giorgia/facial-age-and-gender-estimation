@@ -21,6 +21,8 @@ class Experiment:
 		"""
 		Initialisation of Experiment.
 		"""
+		self.id = id_exp
+
 		self.exp_folder = os.path.join(self.root, "results/"+str(id_exp)+"/")
 		if not os.path.exists(self.exp_folder):
 			os.mkdir(self.exp_folder)
@@ -47,12 +49,12 @@ class Experiment:
 			self.model_path = os.path.join(self.root, "models/gray_no_alpha/model_4")
 
 		# Prediction output TXT file
-		self.prediction_file = self.exp_folder+"/prediction_"+self.colormode+".txt"
+		self.prediction_file = self.exp_folder+"/prediction.txt"
 
 	#-------------------------------------------------------------------------------------------
 	def init_robot(self, ip, port, image_folder, not_valid_image_folder):
 		"""
-		Create two robot sessions: HumanGreeter and AgeGroupBehave.
+		Create two robot sessions: HumanGreeter and AgeGroupBehavior.
 		Two different instances because each has specific services.
 		Return True if connection is possible, False otherwise.
 		"""
@@ -60,15 +62,14 @@ class Experiment:
 		try:
 			# Initialize qi framework.
 			connection_url = "tcp://" + str(ip) + ":" + str(port)
-			app = qi.Application(["HumanGreeter", "--qi-url=" + connection_url])
+			self.app = qi.Application(["Thesis", "--qi-url=" + connection_url])
 		except RuntimeError:
-			print ("Can't connect to Naoqi at ip \"" + args.ip + "\" on port " + str(args.port) +".\n"
-			"Please check your script arguments. Run with -h option for help.")
+			print ("Can't connect to Naoqi at ip \"" + args.ip + "\" on port " + str(args.port) +".\n")
 			return False
-
+		
 		# Two different instances because each has specific services.
-		self.robot_greeter = HumanGreeter(app=app, image_folder=image_folder, not_valid_image_folder=not_valid_image_folder)
-		self.robot_behave = AgeGroupBehave(app=app)
+		self.robot_greeter = HumanGreeter(app=self.app, image_folder=image_folder, not_valid_image_folder=not_valid_image_folder)
+		self.robot_behave = AgeGroupBehavior(app=self.app)
 		return True
 
 	#-------------------------------------------------------------------------------------------
@@ -226,11 +227,12 @@ class Experiment:
 		os.system(cmd_behave)
 
 	#-------------------------------------------------------------------------------------------
-	def run(self):	
+	def run_implicit(self):	
 		"""
-		Run the experiment. Capture face images and crop them while the robot presents itself.
-		Predict age and gender. Do some customized behaviors based on the prediction.
-		"""	
+		Run the experiment with final implicit behavior.
+		Capture face images. Crop them and predict age and gender while the robot presents itself.
+		Do some customized behaviors based on the prediction.
+		"""
 		# Init robot
 		if not self.init_robot(ip=ip_robot, port=port_robot, image_folder=self.temp_img_folder, not_valid_image_folder=self.trash_img_folder):
 			sys.exit(1)
@@ -243,23 +245,23 @@ class Experiment:
 		# 1: Crop images on faces, then predict age and gender
 		# 2: Pepper introduces itself
 		process_crop_images = multiprocessing.Process(target=self.crop_images_jojogan)
-		process_intro_robot = multiprocessing.Process(target=self.robot_greeter.introduce_robot)
+		process_intro_robot = multiprocessing.Process(target=self.robot_greeter.introduce_robot_1)
 		process_predict = multiprocessing.Process(target=self.predict)
-		
+
 		process_intro_robot.start()
 		process_crop_images.start()
 		#process_intro_robot.join()
 		process_crop_images.join()
 		
+		# PREDICTION
+		# At this point cropping is done -> Proceed with prediction
 		if not process_crop_images.is_alive():
 			process_crop_images.terminate()
 			process_predict.start()
 			process_predict.join()
 
+		# BEHAVIORS
 		if not process_predict.is_alive():	
-			# PREDICTION
-			# At this point cropping is done -> Proceed with prediction
-			#self.predict()
 			# Read the TXT prediction file
 			# and save age and gender in the experiment object
 			f = open(self.prediction_file, "r")
@@ -270,7 +272,70 @@ class Experiment:
 			print("Final age: ", self.age)
 			print("Final gender: ", self.gender)
 			# DO BEHAVIORS
-			#self.robot_behave.behave(age=self.age, gender=self.gender)	
+			self.robot_behave.implicit_behavior(age=self.age, gender=self.gender)
+	
+	#-------------------------------------------------------------------------------------------
+	def run_explicit(self):	
+		"""
+		Run the experiment with final explicit behavior.
+		Capture face images. Crop them and predict age and gender while the robot presents itself.
+		Say prediction explicitly. 
+		"""
+		# Init robot
+		if not self.init_robot(ip=ip_robot, port=port_robot, image_folder=self.temp_img_folder, not_valid_image_folder=self.trash_img_folder):
+			sys.exit(1)
+
+		# Capture images
+		self.robot_greeter.run()
+
+		# At this point capturing is done -> 
+		# In PARALLEL:
+		# 1: Crop images on faces, then predict age and gender
+		# 2: Pepper introduces itself
+		process_crop_images = multiprocessing.Process(target=self.crop_images_jojogan)
+		process_intro_robot = multiprocessing.Process(target=self.robot_greeter.introduce_robot_2)
+		process_predict = multiprocessing.Process(target=self.predict)
+
+		process_intro_robot.start()
+		process_crop_images.start()
+		#process_intro_robot.join()
+		process_crop_images.join()
+		
+		# PREDICTION
+		# At this point cropping is done -> Proceed with prediction
+		if not process_crop_images.is_alive():
+			process_crop_images.terminate()
+			process_predict.start()
+			process_predict.join()
+
+		# BEHAVIORS
+		if not process_predict.is_alive():	
+			# Read the TXT prediction file
+			# and save age and gender in the experiment object
+			f = open(self.prediction_file, "r")
+			content = f.read()
+			self.age = content.split(",")[0]
+			self.gender = content.split(",")[1]
+			f.close()
+			print("Final age: ", self.age)
+			print("Final gender: ", self.gender)
+			# DO BEHAVIORS
+			self.robot_behave.explicit_behavior(age=self.age, gender=self.gender)
+
+	#-------------------------------------------------------------------------------------------
+	def run_break(self):
+		"""
+		Break between two experiments. 
+		"""
+		self.robot_behave.say_intermediate_greetings()
+
+	#-------------------------------------------------------------------------------------------
+	def run_end(self):
+		"""
+		Final greetings at the end of the experiment.
+		"""
+		self.robot_behave.say_final_greetings()	
+				
 
 #-------------------------------------------------------------------------------------------
 if __name__ == "__main__":
@@ -284,16 +349,43 @@ if __name__ == "__main__":
 	ip_robot = args.ip
 	port_robot = args.port
 
-	# START
-	start_time = time.time()
-	# Init experiment
-	id_exp = 24
-	print("Experiment: ", str(id_exp))
-	exp = Experiment(id_exp, colormode=args.colormode)
-	# Run
-	exp.run()
-	# END
-	print("--- %s seconds ---" % round(time.time() - start_time, 2))
+	# YOU NEED TO CHANGE:
+	id_exp = 6
+	rand = 1 # 1: e+i, 2: i+e
+	part = 2
+
+	if part == 1:
+		# START
+		start_time = time.time()
+		if rand == 1:
+			id_exp = str(id_exp)+"_1_e"
+			print("Experiment: ", str(id_exp))
+			exp = Experiment(id_exp, colormode=args.colormode)
+			exp.run_explicit()
+		else:
+			id_exp = str(id_exp)+"_1_i"
+			print("Experiment: ", str(id_exp))
+			exp = Experiment(id_exp, colormode=args.colormode)
+			exp.run_implicit()
+
+		exp.run_break()
+		print("--- %s seconds ---" % round(time.time() - start_time, 2))
+
+	# SECOND PART
+	else:
+		if rand == 1:
+			id_exp = str(id_exp)+"_2_i"
+			print("Experiment: ", str(id_exp))
+			exp = Experiment(id_exp, colormode=args.colormode)
+			exp.run_implicit()
+		else:
+			id_exp = str(id_exp)+"_2_e"
+			print("Experiment: ", str(id_exp))
+			exp = Experiment(id_exp, colormode=args.colormode)
+			exp.run_explicit()
+		exp.run_end()
+	
+	sys.exit()
 
 	''' ANALYSES ALL EXPERIMENTS
 	subfolders = os.listdir("C:/0_thesis/3_experiment/results/")
