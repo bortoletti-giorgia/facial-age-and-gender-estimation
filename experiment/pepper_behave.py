@@ -107,6 +107,9 @@ class AgeGroupBehavior(object):
 		# group 3: 20-29, but add also 18 and 19 
 		if self.age_group == 2 and age >= 18: 
 			self.age_group = 3
+
+		if self.age_group == 9 or self.age_group == 10 or self.age_group == 11: 
+			self.age_group = 8
 	
 	#-------------------------------------------------------------------------------------------
 	def get_age_range(self):
@@ -240,15 +243,15 @@ class AgeGroupBehavior(object):
 			image_path = self.root_image_path+"/4_0.jpg"
 			text = "Eri "
 			text += "piccolo" if self.gender=="male" else "piccola"
-			text += "ma sicuramente ti ricorderai cos'"+u'\xe8'+" successo l'11 settembre 2001.\n"
+			text += "ma sicuramente ti ricorderai cos'"+u'\xe8'+" successo il giorno 11 settembre 2001. \n"
 			text += "L'11 settembre 2001 c'"+u'\xe8'+" stato un attacco terroristico che ha sconvolto il mondo intero. In quell'occasione, 19 terroristi di Al Qaida fecero schiantare due aerei Boeing 767 contro le Torri Gemelle del World Trade Center di New York\n"
 			text += "L'attacco caus"+u'\xf2'+" la morte di quasi tremila persone e fer"+u'\xec'+" oltre sei mila. L'attentato ha avuto un impatto enorme sulla politica internazionale e sulla sicurezza aerea, portando a una serie di riforme e cambiamenti."
 		# LADY D
 		else:
 			image_path = self.root_image_path+"/4_1_"+str(self.gender)+".jpg"
-			text = "Oggi voglio ricordare con te un personaggio storico vissuto fino al 1997\n"
-			text += "Lady D "+u'\xe8'+" il soprannome con cui era comunemente conosciuta Lady Diana Spencer, nata il primo luglio 1961 nel Regno Unito. "
-			text += ""+u'\xe8'+" stata una figura pubblica molto amata. Lady Diana "+u'\xe8'+" stata sposata con il principe Carlo, erede al trono britannico, dal 1981 al 1996. "
+			text = "Oggi voglio ricordare con te un personaggio storico vissuto fino al 1997. \n"
+			text += "Lady D "+u'\xe8'+" il soprannome con cui era comunemente conosciuta Lady Diana Spencer, nata il primo luglio 1961 nel Regno Unito. \n"
+			text += ""+u'\xe8'+" stata una figura pubblica molto amata. Lady Diana "+u'\xe8'+" stata sposata con il principe Carlo, erede al trono britannico, dal 1981 al 1996. \n "
 			text += "Dopo il divorzio dal principe Carlo, Lady Diana ha continuato il suo lavoro di beneficenza, diventando un'importante sostenitrice della lotta contro l'AIDS, delle cause umanitarie e della protezione delle mine antiuomo. "
 			text += "Nel 1997, Lady Diana "+u'\xe8'+" deceduta tragicamente in un incidente automobilistico a Parigi, all'et"+u'\xe0'+" di soli 36 anni. La sua morte ha suscitato un'enorme reazione emotiva in tutto il mondo, con molte persone che hanno espresso il loro cordoglio per la sua scomparsa."
 		# Show image
