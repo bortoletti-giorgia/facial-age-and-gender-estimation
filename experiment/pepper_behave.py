@@ -19,8 +19,7 @@ SPEECH_SPEED = "80"
 
 class AgeGroupBehavior(object):
 
-	age_ranges = [range(0, 18), range(0, 18), range(0, 18),
-	       range(18, 30), range(30, 40), range(40, 50), 
+	age_ranges = [range(0, 18), range(18, 30), range(30, 40), range(40, 50), 
 		   range(50, 60), range(60, 70), range(70, 117)]
 
 	def __init__(self, app):
@@ -100,7 +99,7 @@ class AgeGroupBehavior(object):
 	#-------------------------------------------------------------------------------------------
 	def set_age_group(self, age):
 		"""
-		Age groups are: 0 or 1 or 2 (0-17 years), 3 (18-29 years), 4 (30-39), 5 (40-49), 6 (50-59), 7 (60-69), 8 (over 70).
+		Age groups are: 0 (0-17 years), 1 (18-29 years), 2 (30-39), 3 (40-49), 4 (50-59), 5 (60-69), 6 (over 70).
 		"""
 		age = int(float(age))
 		self.age_group = int(AgeGroups().getGroupFromAge(age))
@@ -110,6 +109,12 @@ class AgeGroupBehavior(object):
 
 		if self.age_group == 9 or self.age_group == 10 or self.age_group == 11: 
 			self.age_group = 8
+		
+		# 0 or 1 or 2 (0-17 years) -> group 0
+		if self.age_group == 1 or self.age_group == 2:
+			self.age_group = 0
+		elif self.age_group >= 3:
+			self.age_group = self.age_group - 2
 	
 	#-------------------------------------------------------------------------------------------
 	def get_age_range(self):
@@ -139,28 +144,28 @@ class AgeGroupBehavior(object):
 		self.set_age_group(age=age)
 		self.gender = gender
 
-		# 0-2, 3-12, 13-17
-		if self.age_group == 0 or self.age_group == 1 or self.age_group == 2: 
+		# 0-17
+		if self.age_group == 0: 
 			print("Under 18: bad.")
 			self.case_0()
 		# 18-29 because I know that people coming in the lab are over 18
-		elif self.age_group == 3: 
+		elif self.age_group == 1: 
 			print("18-29 years")
 			self.case_1()
 		# 30-39 years
-		elif self.age_group == 4: 
+		elif self.age_group == 2: 
 			print("30-39 years")
 			self.case_2()
 		# 40-49 years
-		elif self.age_group == 5: 
+		elif self.age_group == 3: 
 			print("40-49 years")
 			self.case_3()
 		# 50-59 years
-		elif self.age_group == 6: 
+		elif self.age_group == 4: 
 			print("50-59 years")
 			self.case_4()
 		# 60-69 years
-		elif self.age_group == 7: 
+		elif self.age_group == 5: 
 			print("60-69 years")
 			self.case_5()
 		# over 70

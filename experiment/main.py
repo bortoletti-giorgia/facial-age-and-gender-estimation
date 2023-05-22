@@ -163,60 +163,6 @@ class Experiment:
 		return self.gender
 	
 	#-------------------------------------------------------------------------------------------
-	def predict_all_models(self):
-		"""
-		Use the predict fuction on all the availables models.
-		"""
-		models_rgb = []
-		models_rgb.append(os.path.join(self.root, "models/rgb_no_alpha/model_4"))
-		models_rgb.append(os.path.join(self.root, "models/rgb_alpha05/model_4"))
-		models_rgb.append(os.path.join(self.root, "models/rgb_alpha1/model_4"))
-
-		models_gray = []
-		models_gray.append(os.path.join(self.root, "models/gray_no_alpha/model_4"))
-		models_gray.append(os.path.join(self.root, "models/gray_alpha05/model_4"))
-		models_gray.append(os.path.join(self.root, "models/gray_alpha1/model_4"))
-		
-		#sys.path.remove('/opt/ros/kinetic/lib/python2.7/dist-packages')
-		for model in models_rgb:
-			print(model)
-			result_file = self.exp_folder+"/prediction_"+model.split("/")[-2]+".txt"
-			os.system('conda run -n model python predict.py --imagespath="'+self.img_folder+'" --resultfile="'+result_file+'" --modelpath="'+model+'" --colormode="rgb"')
-
-		for model in models_gray:
-			print(model)
-			result_file = self.exp_folder+"/prediction_"+model.split("/")[-2]+".txt"
-			os.system('conda run -n model python predict.py --imagespath="'+self.img_folder+'" --resultfile="'+result_file+'" --modelpath="'+model+'" --colormode="grayscale"')
-	
-	#-------------------------------------------------------------------------------------------
-	def predict_balance_models(self):
-		"""
-		Use the predict fuction on all the availables balanced models.
-		"""
-		temp_root = "C:/0_thesis/2_model/TESTING/BALANCE/"
-
-		models_rgb = []
-		models_rgb.append(os.path.join(temp_root, "19fold/model_4"))
-		models_rgb.append(os.path.join(temp_root, "20netto/model_4"))
-		models_rgb.append(os.path.join(temp_root, "20pepper05/model_4"))
-
-		models_gray = []
-		models_gray.append(os.path.join(temp_root, "19foldgray/model_4"))
-		models_gray.append(os.path.join(temp_root, "20nettogray/model_4"))
-		models_gray.append(os.path.join(temp_root, "20pepper05gray/model_4"))
-		
-		#sys.path.remove('/opt/ros/kinetic/lib/python2.7/dist-packages')
-		for model in models_rgb:
-			print(model)
-			result_file = self.exp_folder+"/prediction_balance_"+model.split("/")[-2]+".txt"
-			os.system('conda run -n thesis python predict.py --imagespath="'+self.img_folder+'" --resultfile="'+result_file+'" --modelpath="'+model+'" --colormode="rgb"')
-
-		for model in models_gray:
-			print(model)
-			result_file = self.exp_folder+"/prediction_balance_"+model.split("/")[-2]+".txt"
-			os.system('conda run -n thesis python predict.py --imagespath="'+self.img_folder+'" --resultfile="'+result_file+'" --modelpath="'+model+'" --colormode="grayscale"')
-
-	#-------------------------------------------------------------------------------------------
 	def behave(self):
 		"""
 		Calling the file 'pepper_behave.py', reproduce a customized behavior on Pepper based on experiment's age and gender.
@@ -386,15 +332,4 @@ if __name__ == "__main__":
 		exp.run_end()
 	
 	sys.exit()
-
-	''' ANALYSES ALL EXPERIMENTS
-	subfolders = os.listdir("C:/0_thesis/3_experiment/results/")
-	for s in subfolders:
-		id_exp = int(s)
-		print("Experiment: ", s)
-		exp = Experiment(id_exp, colormode=args.colormode)
-		# PREDICTION
-		#exp.predict_all_models()
-		#exp.predict_balance_models()
-	'''
 

@@ -17,12 +17,8 @@ import os
 import numpy as np
 
 import sys
-#sys.path.remove('/opt/ros/kinetic/lib/python2.7/dist-packages')
-
-import cv2
-#sys.path.append('./anaconda3/envs/model/lib/python3.8/site-packages')
-
-THRESHOLD_BLURRY = 50
+if '/opt/ros/kinetic/lib/python2.7/dist-packages' in sys.path:
+    sys.path.remove('/opt/ros/kinetic/lib/python2.7/dist-packages')
 
 # Arguments
 parser = argparse.ArgumentParser()
@@ -51,43 +47,16 @@ genders = []
 for filename in filenames:
 	if colormode in filename:
 		filepath = images_path+"/"+filename
-		blurry = False
-		
-		# https://pyimagesearch.com/2015/09/07/blur-detection-with-opencv/
-		gray = cv2.cvtColor(cv2.imread(filepath), cv2.COLOR_BGR2GRAY)
-		fm = cv2.Laplacian(gray, cv2.CV_64F).var()
-		# if the focus measure is less than the supplied threshold,
-		# then the image should be considered "blurry"
-		'''
-		if fm < THRESHOLD_BLURRY:
-			blurry = True
-		'''
-		if not blurry:
-			img = tf.keras.utils.load_img(filepath, target_size = (img_size, img_size), color_mode=colormode)
-			img = tf.keras.utils.img_to_array(img)
-			img = img * (1./255)
-			img = tf.expand_dims(img, axis = 0)
-			prediction = model.predict(img)
-			prediction = np.round(prediction)
-			age_pred = int(prediction[0])
-			ages.append(age_pred)
-			gender_pred = "male" if prediction[1] == 0 else "female"
-			genders.append(gender_pred)
-			'''
-			age_real = int(filename.split("_")[0])
-			gender_real = "male" if int(filename.split("_")[1]) == 0 else "female"
-			print("AGE "+str(age_real)+" (real) "+str(age_pred)+" (predicted)")
-			print("GENDER "+str(gender_real)+" (real) "+str(gender_pred)+" (predicted)")
-			'''
-			'''
-			print(filename)
-			print("AGE "+str(age_pred)+" (predicted)")
-			print("GENDER "+str(gender_pred)+" (predicted)")
-			# show the image
-			cv2.imshow(" ("+str(fm)+"), age "+str(age_pred)+", "+gender_pred, gray)
-			cv2.waitKey(0)
-			'''
-cv2.destroyAllWindows() 
+		img = tf.keras.utils.load_img(filepath, target_size = (img_size, img_size), color_mode=colormode)
+		img = tf.keras.utils.img_to_array(img)
+		img = img * (1./255)
+		img = tf.expand_dims(img, axis = 0)
+		prediction = model.predict(img)
+		prediction = np.round(prediction)
+		age_pred = int(prediction[0])
+		ages.append(age_pred)
+		gender_pred = "male" if prediction[1] == 0 else "female"
+		genders.append(gender_pred)
 
 # Analysis
 age_avg = sum(ages)/len(ages)
