@@ -296,9 +296,11 @@ if __name__ == "__main__":
 	port_robot = args.port
 
 	# YOU NEED TO CHANGE:
-	id_exp = 6
+	# -- START --
+	id_exp = 62
 	rand = 1 # 1: e+i, 2: i+e
-	part = 2
+	part = 1
+	# -- END --
 
 	if part == 1:
 		# START
