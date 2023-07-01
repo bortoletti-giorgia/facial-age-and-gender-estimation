@@ -1,4 +1,4 @@
-# Guess the age
+# Guess the age and the gender
 
 This project aims to estimate in real-time the gender and an age-group of the person interacting with Pepper robot.
 
@@ -6,7 +6,8 @@ To do this, a dataset consistent with Pepper's webcam style must be available. [
 
 JoJoGAN applies the style of some reference images called "style references" to other images called "test inputs". In this project, "style references" are some pictures taken from Pepper's camera and "test input" is the UTKFace dataset.
 
-The next step is then to train a model on JoJoGAN's results.
+After creating the dataset, models are trained.
+The models are validated during an interaction experiment with Pepper and the data analysed to verify the performance of the model and perception and trust on the robot.
 
 ## Local Folder Structure
 
@@ -58,6 +59,12 @@ Below is the structure of the local folders:
 ├── \sam-model\
 │   ├── SAM					# Clone of https://github.com/bortoletti-giorgia/SAM
 │   ├── main-sam.job
+
+├── \2_model\
+
+├── \3_experiment\
+
+├── \4_results\
 
 ├── LICENSE
 └── README.md
@@ -203,7 +210,15 @@ JOB file is [main-jojo.job](https://github.com/bortoletti-giorgia/facial-age-est
 ## Train
 Training is done on gender and age labels. However, age is not considered in its exactness but taking into account an age-group defined in [age_groups.py](https://github.com/bortoletti-giorgia/facial-age-estimation/blob/dataset/dataset-analysis/age_groups.py). 
 
-## Test
+All training steps are enumerated in [this branch](https://github.com/bortoletti-giorgia/facial-age-and-gender-estimation/tree/model/model). The final training model is [for RGB images](https://github.com/bortoletti-giorgia/facial-age-and-gender-estimation/blob/model/model/2_train-cnn-model-fold.py) and [for grayscale images](https://github.com/bortoletti-giorgia/facial-age-and-gender-estimation/blob/model/model/2_train-cnn-model-fold-gray.py).
 
-## Evaluate
+## Experiment
+
+All the code is in [this branch](https://github.com/bortoletti-giorgia/facial-age-and-gender-estimation/tree/experiment/experiment) and explanation is written in the thesis documentation.
+
+## Evaluation
+
+Experiment data are elaborated with code [here](https://github.com/bortoletti-giorgia/facial-age-and-gender-estimation/tree/evaluation/evaluation) and final consideration reported in the thesis documentation.
+
+
  
